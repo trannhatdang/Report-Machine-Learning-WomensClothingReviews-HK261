@@ -1,0 +1,227 @@
+%!TEX program = xelatex
+\documentclass[a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Consolas}
+
+\usepackage{tcolorbox}
+\newtcolorbox{Qbox}[1]{colback=green!5!white,colframe=green!75!black,fonttitle=\bfseries,title=#1}
+
+%code C#
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Màu nền và màu sắc cho code
+\definecolor{codebg}{rgb}{0.94, 1.0, 0.94}
+\definecolor{keywordcolor}{rgb}{0.58, 0, 0.82}   % tím
+\definecolor{stringcolor}{rgb}{0.0, 0.5, 0}      % xanh lá
+\definecolor{commentcolor}{rgb}{0.0, 0.4, 0.4}   % xanh đậm
+\definecolor{frameborder}{rgb}{0, 0, 0}          % đen
+
+% Style cho C#
+\lstdefinelanguage{CSharp}{
+    language=[Sharp]C,
+    morekeywords={async,await,var,dynamic,yield,get,set},
+}
+
+\lstdefinestyle{csharpstyle}{
+    language=CSharp,
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{keywordcolor}\bfseries,
+    stringstyle=\color{stringcolor},
+    commentstyle=\color{commentcolor}\itshape,
+    frame=single,
+    rulecolor=\color{frameborder},
+    framerule=0.7pt,
+    framesep=8pt,
+    tabsize=4,
+    showspaces=false,
+    showstringspaces=false,
+    breaklines=true
+}
+
+\usepackage{graphicx,wrapfig,lipsum}
+\usepackage{float}
+\usepackage{longtable}
+
+%\usepackage[utf8]{inputenc}
+%\usepackage[francais]{babel}
+\usepackage{a4wide,amssymb,epsfig,latexsym,multicol,array,hhline,fancyhdr}
+\usepackage{indentfirst}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{empheq}
+\usepackage{lastpage}
+\usepackage[lined,boxed,commentsnumbered]{algorithm2e}
+\usepackage{enumerate}
+\usepackage{color}
+\usepackage{graphicx}							% Standard graphics package
+\usepackage{array}
+\usepackage{tabularx, caption}
+\captionsetup{font={small,it}, position=below}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{rotating}
+\usepackage{graphics}
+\usepackage{geometry}
+\geometry{
+    left=2cm,      % lề trái
+    right=2cm,     % lề phải
+    % top=2cm,         % lề trên
+    % bottom=2cm,      % lề dưới
+    % bindingoffset=0.5cm, % dùng nếu in 2 mặt (thêm vào lề trái)
+}
+\usepackage{setspace}
+\usepackage{epsfig}
+\usepackage{tikz}
+\usepackage{refcount}
+\usetikzlibrary{arrows,snakes,backgrounds}
+\usepackage{hyperref}
+\hypersetup{urlcolor=blue,linkcolor=black,citecolor=black,colorlinks=true} 
+\usepackage{subfigure}
+\usepackage{fancybox}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{M}[1]{>{\centering\arraybackslash}m{#1}}
+%\usepackage{pstcol} 								% PSTricks with the standard color package
+
+\newtheorem{theorem}{{\bf Định lý}}
+\newtheorem{property}{{\bf Tính chất}}
+\newtheorem{proposition}{{\bf Mệnh đề}}
+\newtheorem{corollary}[proposition]{{\bf Hệ quả}}
+\newtheorem{lemma}[proposition]{{\bf Bổ đề}}
+
+
+%\usepackage{fancyhdr}
+\setlength{\headheight}{40pt}
+\pagestyle{fancy}
+\fancyhead{} % clear all header fields
+\fancyhead[L]{
+ \begin{tabular}{rl}
+    \begin{picture}(25,15)(0,0)
+    \put(-5,-15){\includegraphics[width=17mm, height=12mm]{hcmut.png}}
+    %\put(0,-8){\epsfig{width=10mm,figure=hcmut.eps}}
+   \end{picture}&
+	%\includegraphics[width=8mm, height=8mm]{hcmut.png} & %
+	\begin{tabular}{l}
+		\textbf{\bf \ttfamily Trường Đại Học Bách Khoa Tp.Hồ Chí Minh}\\
+		\textbf{\bf \ttfamily Khoa Khoa Học và Kỹ Thuật Máy Tính}
+	\end{tabular} 	
+ \end{tabular}
+}
+\fancyhead[R]{
+	\begin{tabular}{l}
+		\tiny \bf \\
+		\tiny \bf 
+	\end{tabular}  }
+\fancyfoot{} % clear all footer fields
+\fancyfoot[L]{\scriptsize \ttfamily Đồ án tốt nghiệp - CO4337 - 2026}
+\fancyfoot[R]{\scriptsize \ttfamily Trang {\thepage}/\pageref{LastPage}}
+\renewcommand{\headrulewidth}{0.1pt}
+\renewcommand{\footrulewidth}{0.1pt}
+%%%
+\setcounter{secnumdepth}{4}
+\setcounter{tocdepth}{3}
+\makeatletter
+\newcounter {subsubsubsection}[subsubsection]
+\renewcommand\thesubsubsubsection{\thesubsubsection .\@alph\c@subsubsubsection}
+\newcommand\subsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
+                                     {-3.25ex\@plus -1ex \@minus -.2ex}%
+                                     {1.5ex \@plus .2ex}%
+                                     {\normalfont\normalsize\bfseries}}
+\newcommand*\l@subsubsubsection{\@dottedtocline{3}{10.0em}{4.1em}}
+\newcommand*{\subsubsubsectionmark}[1]{}
+\makeatother
+
+
+\begin{document}
+\onehalfspacing
+\begin{titlepage}
+
+\begin{tikzpicture}[remember picture, overlay]
+
+% Khung ngoài
+\draw[line width=6pt]
+  ([xshift=2cm,yshift=-2cm]current page.north west)
+  rectangle
+  ([xshift=-2cm,yshift=2cm]current page.south east);
+
+% Khung trong
+\draw[line width=3pt]
+  ([xshift=2.3cm,yshift=-2.3cm]current page.north west)
+  rectangle
+  ([xshift=-2.3cm,yshift=2.3cm]current page.south east);
+
+\end{tikzpicture}
+
+\vspace{-1.5cm}
+
+\begin{center}
+\centering
+\Large
+\textbf{ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH \\
+TRƯỜNG ĐẠI HỌC BÁCH KHOA \\
+KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH }
+
+\end{center}
+
+\vspace{0.2cm}
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=7cm]{hcmut.png}
+\end{center}
+\end{figure}
+\vspace{-0.7cm}
+\begin{center}
+		{\LARGE \bf BÁO CÁO} \\
+        {\LARGE \bf BÀI TẬP LỚN HỌC MÁY}\\
+			\vspace*{1cm}
+			\begin{center}
+				\fontsize{24pt}{10pt} \bf{Ứng dụng SVM, Naive Bayes, Logistic Regression, XGBoost vào bài toán}\\
+                \fontsize{24pt}{10pt} \bf{phân loại review quần áo phụ nữ} \\
+			\end{center}
+
+\vspace{1cm}
+
+    \begin{tabular}{lll}
+    \Large \bf GVHD: & \Large Th.S Võ Thanh Hùng & 
+    \vspace{0.2cm}\\
+    \Large \bf SVTH1:  &\Large  &\Large  \\
+    \Large \bf SVTH2:  &\Large  &\Large \\
+    \Large \bf SVTH3:  &\Large  &\Large  \\
+    \end{tabular}
+    \end{center}
+    \vfill
+    \vspace{0.5cm}
+    \begin{center}
+    {\large Thành phố Hồ Chí Minh, tháng 11/2026}
+\end{center}
+\end{titlepage}
+
+
+%\thispagestyle{empty}
+\newpage
+
+\clearpage
+\setcounter{page}{1} % bắt đầu lại từ trang 1
+\newpage
+\tableofcontents
+\newpage
+\listoffigures
+
+\listoftables
+\newpage
+
+\input{"Content/Phan Tich/phan_tich.tex"}
+
+\newpage
+
+\input{"Content/Giai Quyet Bai Toan/giai_quyet_bai_toan.tex"}
+
+\newpage
+
+\input{"Content/So sanh, Phan Tich/so_sanh_ket_luan.tex"}
+
+\end{document}
