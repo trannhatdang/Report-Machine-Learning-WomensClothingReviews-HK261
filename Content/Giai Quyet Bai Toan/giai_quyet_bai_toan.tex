@@ -168,6 +168,11 @@ NaiveBayes (baseline) & 0.9040 & 0.9433 & 0.6879 & 0.8156 & 0.5952 & 0.9484 & \t
 \label{tab:baseline_results}
 \end{table}
 
+Kết quả kiểm thử các mô hình Baseline tương đối nhau, chỉ cách nhau xấp xỉ 0.1 điểm, trong đó SVM (Linear) có điểm nhỉnh hơn so với các model còn lại. 
+Naive Bayes có thời gian huấn luyện ngắn nhất (dưới 1s) nhưng có điểm F1 cho class 0 thấp hơn hẳn những model còn lại (0.5952 so với 0.75 trở lên cho các model còn lại). Sỡ dĩ Naive Bayes có tốc độ nhanh do chỉ mất 1 pass dữ liệu để tìm được các trọng số cho model.
+XGBoost có thời gian huấn luyện lâu nhất, hơn 7s, nhưng không có kết quả vượt trội so với các model còn lại. XGBoost cần đi qua tổ hợp của nhiều cây quyết định để tìm được trọng số tối ưu.
+
+
 \subsubsection{Tinh chỉnh siêu tham số với RandomizedSearchCV}
 Nhóm áp dụng \texttt{RandomizedSearchCV} kết hợp kiểm định chéo phân tầng (\textit{Stratified 5-Fold CV} cho Logistic Regression, Naive Bayes, LinearSVC; \textit{Stratified 3-Fold CV} với \texttt{n\_jobs=1} trên CUDA cho XGBoost) nhằm tối ưu hàm mục tiêu \texttt{scoring='f1\_macro'}. Bảng~\ref{tab:tuning_summary} tổng hợp không gian tìm kiếm, cấu hình tối ưu và điểm CV tốt nhất của cả 4 mô hình.
 
@@ -201,6 +206,9 @@ $\eta \approx 0.0858$; \texttt{max\_depth=6}; $N=539$; \texttt{min\_child=4}; \t
 \label{tab:tuning_summary}
 \end{table}
 
+Với tính chất ngẫu nhiên của RandomizedSearchCV, không thể gọi cấu hình trên là tối ưu, mà là xấp xỉ của một cấu hình tối ưu có thể tìm được ở không gian của mọi cấu hình có thể.
+Chúng em chấp nhận sử dụng các cấu hình được tìm bởi RandomizedSearchCV và coi chúng là cấu hình tối ưu do thời lượng tìm kiếm của RandomizedSearchCV ngắn hơn rất nhiều so với GridSearchCV (tìm kiếm mọi cấu hình có thể).
+
 \subsection{Kỹ thuật mở rộng nâng cao (Advanced Experiments)}
 
 \subsubsection{Học kết hợp (Ensemble Learning cho Support Vector Machine)}
@@ -226,11 +234,11 @@ Kết quả ở Bảng~\ref{tab:ensemble_eval} khẳng định \texttt{Bagging (
 
 \subsubsection{Xây dựng Pipeline khép kín cho LinearSVC}
 Từ các tham số tối ưu tìm được ở bước tinh chỉnh \texttt{LinearSVC}, nhóm tích hợp thành một Pipeline khép kín (\texttt{LinearSVC + Bagging Pipeline}):
-\begin{enumerate}
+\begin{itemize}
     \item Vector hóa: \texttt{TfidfVectorizer} với các tham số \texttt{min\_df=2}, \texttt{ngram\_range=(1, 3)}, \texttt{max\_features=None} và \texttt{sublinear\_tf=True}.
     \item Lọc đặc trưng: \texttt{SelectKBest} ($\chi^2$, \texttt{k='all'}).
     \item Học tổ hợp: \texttt{BaggingClassifier} sử dụng bộ phân loại cơ sở \texttt{LinearSVC} ($C \approx 1.0873$, \texttt{class\_weight=\allowbreak'balanced'}, \texttt{max\_iter=5000}) với \texttt{n\_estimators=10}, \texttt{max\_samples=0.8}.
-\end{enumerate}
+\end{itemize}
 
 \begin{lstlisting}[caption={Cài đặt Pipeline khép kín cho mô hình LinearSVC + Bagging}, label={lst:svm_pipeline}]
 svm_pipeline_complete = Pipeline([
