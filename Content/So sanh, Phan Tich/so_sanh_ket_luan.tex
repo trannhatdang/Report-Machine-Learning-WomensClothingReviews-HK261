@@ -36,10 +36,10 @@ NaiveBayes (baseline) & 0.9040 & 0.9433 & 0.6879 & 0.8156 & 0.5952 & 0.9484 & \t
 
 Từ Bảng~\ref{tab:final_comparison} và Hình~\ref{fig:model_comparison}, nhóm mô hình tuyến tính trên không gian TF-IDF chiếm ưu thế rõ rệt:
 \begin{itemize}
-    \item \textbf{SVM (tuned)} (sử dụng \texttt{LinearSVC} với $n$-gram $(1, 3)$, \texttt{sublinear\_tf=True}, $C \approx 1.0873$) dẫn đầu toàn diện về Accuracy (0.9195), F1 lớp 1 (0.9510), F1 lớp 0 (0.7761), Macro-F1 (0.8635) và ROC-AUC (0.9508) với thời gian huấn luyện 6.19 giây.
-    \item \textbf{LinearSVC + Bagging Pipeline} xếp thứ hai với Macro-F1 đạt 0.8547 (Accuracy 0.9159), tiếp theo sát nút là \textbf{SVM-Linear (baseline)} (0.8532) và \textbf{LogReg (tuned)} (0.8528, huấn luyện chỉ 2.45 giây). \textbf{LogReg (baseline)} đạt Recall lớp thiểu số cao nhất (0.8599).
-    \item \textbf{XGBoost} đạt hiệu năng cạnh tranh cao sau tinh chỉnh (\texttt{XGBoost (tuned)} đạt Macro-F1 0.8462, \texttt{XGBoost + metadata} đạt 0.8469, Recall lớp 0 đạt 82.6\% $\div$ 82.8\%), nhưng vẫn thấp hơn nhóm mô hình tuyến tính trong khi thời gian huấn luyện dài hơn (11.30 $\div$ 11.48 giây trên GPU).
-    \item \textbf{Multinomial Naive Bayes} có tốc độ huấn luyện nhanh nhất (1.84 giây ở bản baseline), tuy nhiên Recall lớp 0 thấp (0.5952 ở baseline và 0.6826 sau tuning) khiến Macro-F1 dừng ở mức 0.8156 $\div$ 0.8262.
+    \item SVM (tuned) (sử dụng \texttt{LinearSVC} với $n$-gram $(1, 3)$, \texttt{sublinear\_tf=True}, $C \approx 1.0873$) dẫn đầu toàn diện về Accuracy (0.9195), F1 lớp 1 (0.9510), F1 lớp 0 (0.7761), Macro-F1 (0.8635) và ROC-AUC (0.9508) với thời gian huấn luyện 6.19 giây.
+    \item LinearSVC + Bagging Pipeline xếp thứ hai với Macro-F1 đạt 0.8547 (Accuracy 0.9159), tiếp theo sát nút là SVM-Linear (baseline) (0.8532) và LogReg (tuned) (0.8528, huấn luyện chỉ 2.45 giây). LogReg (baseline) đạt Recall lớp thiểu số cao nhất (0.8599).
+    \item XGBoost đạt hiệu năng cạnh tranh cao sau tinh chỉnh (\texttt{XGBoost (tuned)} đạt Macro-F1 0.8462, \texttt{XGBoost + metadata} đạt 0.8469, Recall lớp 0 đạt 82.6\% $\div$ 82.8\%), nhưng vẫn thấp hơn nhóm mô hình tuyến tính trong khi thời gian huấn luyện dài hơn (11.30 $\div$ 11.48 giây trên GPU).
+    \item Multinomial Naive Bayes có tốc độ huấn luyện nhanh nhất (1.84 giây ở bản baseline), tuy nhiên Recall lớp 0 thấp (0.5952 ở baseline và 0.6826 sau tuning) khiến Macro-F1 dừng ở mức 0.8156 $\div$ 0.8262.
 \end{itemize}
 
 \subsection{Phân tích hiện tượng quá khớp (Overfitting Analysis)}
@@ -105,8 +105,8 @@ Rec (Lớp 1)       & 0.95 & 0.95 & 0.95 & 3.863 \\ \hline
 \subsection{Khả năng diễn giải mô hình: Các từ ngữ chi phối quyết định}
 Trích xuất trọng số hồi quy (\textit{Coefficients}) từ mô hình Logistic Regression tối ưu (\texttt{LogReg (tuned)}) để khảo sát khả năng giải thích:
 \begin{itemize}
-    \item \textbf{Hệ số mang giá trị dương lớn}: Thúc đẩy mô hình dự đoán nhãn 1 (\textit{Recommend}).
-    \item \textbf{Hệ số mang giá trị âm lớn}: Thúc đẩy mô hình dự đoán nhãn 0 (\textit{Not Recommend}).
+    \item Hệ số mang giá trị dương lớn: Thúc đẩy mô hình dự đoán nhãn 1 (\textit{Recommend}).
+    \item Hệ số mang giá trị âm lớn: Thúc đẩy mô hình dự đoán nhãn 0 (\textit{Not Recommend}).
 \end{itemize}
 
 \begin{figure}[H]
@@ -121,12 +121,12 @@ Hình~\ref{fig:top_terms} cho thấy các từ thể hiện sự thất vọng v
 \subsection{Phân tích lỗi thực tế (Error Analysis)}
 Sử dụng xác suất dự đoán $P(\text{Rec}=1)$ của \texttt{LogReg (tuned)} để khảo sát các trường hợp mô hình tự tin dự đoán nhưng thực tế lại sai:
 \begin{enumerate}
-    \item \textbf{False Positives (Thực tế là 0 nhưng mô hình gán 1 với xác suất rất cao, $P(\text{Rec}=1) \in [0.9976, 0.9996]$)}:
+    \item False Positives (Thực tế là 0 nhưng mô hình gán 1 với xác suất rất cao, $P(\text{Rec}=1) \in [0.9976, 0.9996]$):
     \begin{itemize}
         \item Ví dụ điển hình: \textit{``Comfy This shirt is like the best worn in flannel...''} ($P = 0.9996$), \textit{``Love this dress I also have this dress in 3/4 sleeve, tegan tunic...''} ($P = 0.9995$), \textit{``Cute pant Unfortunately i had to size down twice...''} ($P = 0.9976$), hay \textit{``Sale find I bought this in navy and love the multi textures... i would not have paid full price on it. it runs small...''} ($P = 0.9976$).
         \item Nguyên nhân: Review chứa nhiều từ khen tích cực (\textit{comfy}, \textit{love}, \textit{cute}, \textit{soft}) nhưng tổng thể khách hàng không hài lòng (hoặc gặp vấn đề về kích cỡ, giá thành, gắn nhãn bất nhất) khiến biểu diễn túi từ TF-IDF đánh giá quá lạc quan.
     \end{itemize}
-    \item \textbf{False Negatives (Thực tế là 1 nhưng mô hình gán 0 với xác suất rất cao, $P(\text{Rec}=1) \in [0.0008, 0.0071]$)}:
+    \item False Negatives (Thực tế là 1 nhưng mô hình gán 0 với xác suất rất cao, $P(\text{Rec}=1) \in [0.0008, 0.0071]$):
     \begin{itemize}
         \item Ví dụ điển hình: \textit{``Much thinner I was so excited to receive this top but was immediately disappointed! it is much thinner than it seems \& it almost feels like a cheap top...''} ($P = 0.0008$), \textit{``Strange shape ... the fabrics and details are pretty but the shape is really strange...''} ($P = 0.0014$), \textit{``I recommend with caveats I splurged on this top and was sadly disappointed...''} ($P = 0.0071$).
         \item Nguyên nhân: Khách hàng nêu rõ các nhược điểm (vải mỏng, phom dáng lạ, chật) nhưng vẫn bấm đề xuất sản phẩm; sự hiện diện của các từ mang trọng số âm mạnh (\textit{disappointed}, \textit{cheap}, \textit{strange}, \textit{tight}) kéo xác suất dự đoán về sát 0.
@@ -137,21 +137,21 @@ Sử dụng xác suất dự đoán $P(\text{Rec}=1)$ của \texttt{LogReg (tune
 
 \subsection{Đánh giá kết quả}
 \begin{enumerate}
-    \item \textbf{Xử lý mất cân bằng lớp}: Với tỷ lệ 82.24\% lớp 1 và 17.76\% lớp 0, chỉ số Accuracy thông thường ($\sim 90 \div 92\%$) không phản ánh trọn vẹn thách thức. Các kỹ thuật như \texttt{class\_weight='balanced'} trong Logistic Regression/LinearSVC và \texttt{scale\_pos\_weight=0.2160} trong XGBoost đã đẩy Recall lớp thiểu số (Lớp 0) từ mức 59.5\% (ở Naive Bayes baseline) lên đến 78\% $\div$ 86\%, qua đó cải thiện vượt bậc chỉ số Macro-F1 (đạt từ 0.85 đến 0.8635).
-    \item \textbf{So sánh các thuật toán}:
+    \item Xử lý mất cân bằng lớp: Với tỷ lệ 82.24\% lớp 1 và 17.76\% lớp 0, chỉ số Accuracy thông thường ($\sim 90 \div 92\%$) không phản ánh trọn vẹn thách thức. Các kỹ thuật như \texttt{class\_weight='balanced'} trong Logistic Regression/LinearSVC và \texttt{scale\_pos\_weight=0.2160} trong XGBoost đã đẩy Recall lớp thiểu số (Lớp 0) từ mức 59.5\% (ở Naive Bayes baseline) lên đến 78\% $\div$ 86\%, qua đó cải thiện vượt bậc chỉ số Macro-F1 (đạt từ 0.85 đến 0.8635).
+    \item So sánh các thuật toán:
     \begin{itemize}
-        \item \textbf{Support Vector Machine (\texttt{LinearSVC})}: Kernel Linear chứng minh tính ưu việt trên dữ liệu TF-IDF số chiều lớn. \texttt{SVM (tuned)} đạt hiệu năng cao nhất toàn bộ thực nghiệm (Macro-F1 0.8635, Accuracy 0.9195, ROC-AUC 0.9508). Khi kết hợp thêm \texttt{BaggingClassifier}, \texttt{LinearSVC + Bagging Pipeline} giữ hiệu năng đứng thứ hai (Macro-F1 0.8547) đồng thời giảm rõ rệt phương sai và khoảng cách quá khớp (Gap giảm từ 0.1288 xuống 0.1060).
-        \item \textbf{Logistic Regression}: Đạt hiệu năng rất sát nhóm dẫn đầu (Macro-F1 0.8528 ở bản tuned và 0.8510 ở bản baseline), tốc độ huấn luyện cực nhanh ($\sim 2.5$ giây), độ tổng quát hóa ổn định nhất (Gap 0.0558 ở baseline) và có khả năng diễn giải xuất sắc nhờ vector trọng số hệ số.
-        \item \textbf{XGBoost}: Đạt hiệu năng cạnh tranh cao (Macro-F1 0.8462 $\div$ 0.8469, Recall lớp 0 đạt 82.6\% $\div$ 82.8\%), thuật toán histogram tận dụng GPU CUDA giúp tăng tốc đáng kể. Tuy nhiên, trên không gian đặc trưng TF-IDF dạng thưa, các mô hình tuyến tính (\texttt{LinearSVC} / Logistic Regression) vẫn giữ ưu thế cả về hiệu năng lẫn chi phí tài nguyên.
-        \item \textbf{Multinomial Naive Bayes}: Nhanh nhất (1.84 giây) nhưng giả định độc lập giữa các từ và việc không cân bằng trọng số lớp làm hạn chế Recall lớp thiểu số.
+        \item Support Vector Machine (\texttt{LinearSVC}): Kernel Linear chứng minh tính ưu việt trên dữ liệu TF-IDF số chiều lớn. \texttt{SVM (tuned)} đạt hiệu năng cao nhất toàn bộ thực nghiệm (Macro-F1 0.8635, Accuracy 0.9195, ROC-AUC 0.9508). Khi kết hợp thêm \texttt{BaggingClassifier}, \texttt{LinearSVC + Bagging Pipeline} giữ hiệu năng đứng thứ hai (Macro-F1 0.8547) đồng thời giảm rõ rệt phương sai và khoảng cách quá khớp (Gap giảm từ 0.1288 xuống 0.1060).
+        \item Logistic Regression: Đạt hiệu năng rất sát nhóm dẫn đầu (Macro-F1 0.8528 ở bản tuned và 0.8510 ở bản baseline), tốc độ huấn luyện cực nhanh ($\sim 2.5$ giây), độ tổng quát hóa ổn định nhất (Gap 0.0558 ở baseline) và có khả năng diễn giải xuất sắc nhờ vector trọng số hệ số.
+        \item XGBoost: Đạt hiệu năng cạnh tranh cao (Macro-F1 0.8462 $\div$ 0.8469, Recall lớp 0 đạt 82.6\% $\div$ 82.8\%), thuật toán histogram tận dụng GPU CUDA giúp tăng tốc đáng kể. Tuy nhiên, trên không gian đặc trưng TF-IDF dạng thưa, các mô hình tuyến tính (\texttt{LinearSVC} / Logistic Regression) vẫn giữ ưu thế cả về hiệu năng lẫn chi phí tài nguyên.
+        \item Multinomial Naive Bayes: Nhanh nhất (1.84 giây) nhưng giả định độc lập giữa các từ và việc không cân bằng trọng số lớp làm hạn chế Recall lớp thiểu số.
     \end{itemize}
-    \item \textbf{Đóng góp của Siêu dữ liệu (Metadata)}: Việc bổ sung các biến dạng bảng (\texttt{Age}, \texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}) vào XGBoost chỉ làm tăng rất nhẹ Macro-F1 từ 0.8462 lên 0.8469 (+0.0007), chứng tỏ nội dung cảm xúc ẩn chứa trong câu chữ văn bản đánh giá vẫn là yếu tố quyết định hàng đầu.
+    \item Đóng góp của Siêu dữ liệu (Metadata): Việc bổ sung các biến dạng bảng (\texttt{Age}, \texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}) vào XGBoost chỉ làm tăng rất nhẹ Macro-F1 từ 0.8462 lên 0.8469 (+0.0007), chứng tỏ nội dung cảm xúc ẩn chứa trong câu chữ văn bản đánh giá vẫn là yếu tố quyết định hàng đầu.
 \end{enumerate}
 
 \subsection{Hạn chế và Hướng phát triển}
 \begin{itemize}
-    \item \textbf{Hạn chế}: Biểu diễn TF-IDF dạng túi từ (Bag-of-Words / $n$-gram) chưa nắm bắt trọn vẹn ngữ cảnh ngữ nghĩa câu dài, quan hệ phủ định phức tạp hoặc lối nói ẩn ý/châm biếm của người mua sắm. Ngoài ra, thực nghiệm mới thực hiện trên một lần chia train/test cố định và sử dụng ngưỡng phân loại mặc định.
-    \item \textbf{Hướng phát triển}: Nghiên cứu và đối chiếu với các mô hình học sâu (BiLSTM, CNN 1D) hoặc các mô hình ngôn ngữ lớn tiền huấn luyện (\textit{Pre-trained Transformers} như RoBERTa, DistilBERT) để khai thác sâu hơn sắc thái tình cảm trong ngữ cảnh; kết hợp tối ưu hóa ngưỡng cắt xác suất (\textit{Threshold Tuning}) nhằm nâng cao thêm Recall của lớp không đề xuất.
+    \item Hạn chế: Biểu diễn TF-IDF dạng túi từ (Bag-of-Words / $n$-gram) chưa nắm bắt trọn vẹn ngữ cảnh ngữ nghĩa câu dài, quan hệ phủ định phức tạp hoặc lối nói ẩn ý/châm biếm của người mua sắm. Do giới hạn về thời gian huấn luyện trên toàn bộ tập dữ liệu, các kernel phi tuyến của \texttt{SVC} (như RBF, Sigmoid) tốn quá nhiều thời gian và không thể được tinh chỉnh siêu tham số đầy đủ nên nhóm chỉ tập trung triển khai \texttt{LinearSVC}. Ngoài ra, thực nghiệm mới thực hiện trên một lần chia train/test cố định và sử dụng ngưỡng phân loại mặc định.
+    \item Hướng phát triển: Nghiên cứu và đối chiếu với các mô hình học sâu (BiLSTM, CNN 1D) hoặc các mô hình ngôn ngữ lớn tiền huấn luyện (\textit{Pre-trained Transformers} như RoBERTa, DistilBERT) để khai thác sâu hơn sắc thái tình cảm trong ngữ cảnh; kết hợp tối ưu hóa ngưỡng cắt xác suất (\textit{Threshold Tuning}) nhằm nâng cao thêm Recall của lớp không đề xuất.
 \end{itemize}
 
 \begin{thebibliography}{99}

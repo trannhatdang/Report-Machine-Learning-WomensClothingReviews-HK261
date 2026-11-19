@@ -1,7 +1,5 @@
 \section{Giới thiệu bài toán}
 
-Dưới đây là phần phân tích nháp (Đăng)
-
 \subsection{Bối cảnh và mục tiêu đề tài}
 Trong thương mại điện tử, các đánh giá sản phẩm (\textit{reviews}) của khách hàng là nguồn dữ liệu phản hồi quan trọng 
 giúp doanh nghiệp nắm bắt thị hiếu, nâng cao chất lượng sản phẩm và tối ưu hóa trải nghiệm mua sắm. 
@@ -22,11 +20,11 @@ bao gồm 23.486 đánh giá sản phẩm thời trang nữ thực tế từ m�
 
 \subsection{Các thách thức phương pháp luận}
 Trong quá trình xây dựng bài toán học máy, ba thách thức cốt lõi được xác định:
-\begin{enumerate}
+\begin{itemize}
     \item Mất cân bằng lớp nghiêm trọng: Bộ dữ liệu có khoảng 82.24\% mẫu thuộc lớp 1 và chỉ 17.76\% mẫu thuộc lớp 0. Do sự chênh lệch lớn này, thước đo độ chính xác tổng quát (\textit{Accuracy}) không đủ để phản ánh hiệu năng thực tế của mô hình (một mô hình đơn giản luôn dự đoán lớp 1 vẫn đạt độ chính xác hơn 82\%). Vì vậy, nghiên cứu tập trung vào chỉ số Macro-F1, F1-Score và Recall của lớp thiểu số (lớp 0).
     \item Rò rỉ mục tiêu (Target Leakage): Điểm đánh giá số sao (\texttt{Rating}) có mối liên hệ gần như đồng nhất với nhãn \texttt{Recommended IND}. Nếu sử dụng \texttt{Rating} làm biến đầu vào, bài toán phân loại sẽ trở nên tầm thường và làm mất đi ý nghĩa của việc khai phá văn bản. Do đó, biến \texttt{Rating} hoàn toàn bị loại bỏ khỏi không gian đặc trưng.
     \item Biểu diễn văn bản phi cấu trúc: Dữ liệu đánh giá là ngôn ngữ tự nhiên không có cấu trúc cố định, đòi hỏi phương pháp trích xuất đặc trưng phù hợp (TF-IDF) nhằm chuyển đổi thành vector số có tính phân biệt cao, đồng thời kiểm soát độ thưa và kích thước không gian từ vựng.
-\end{enumerate}
+\end{itemize}
 
 \section{Dữ liệu và tiền xử lý}
 
@@ -111,26 +109,26 @@ Kết quả ở Bảng~\ref{tab:rating_leakage} khẳng định khách hàng cho
 
 \subsubsection{Phân tích các đặc trưng phụ trợ}
 \begin{itemize}
-    \item \textbf{Độ tuổi (\texttt{Age})}: Phân bố từ 18 đến 99 tuổi, độ tuổi trung bình là 43.20 tuổi ($\pm 12.28$), tứ phân vị $Q_1 = 34$, trung vị 41, $Q_3 = 52$ tuổi. Nhóm khách hàng chủ yếu thuộc độ tuổi từ 30 đến 55.
-    \item \textbf{Phân nhánh (\texttt{Division Name})}: Gồm 3 nhóm chính: General (58.97\%), General Petite (34.57\%) và Initmates (6.40\%).
-    \item \textbf{Bộ phận (\texttt{Department Name})}: Gồm 6 nhóm chính: Tops (44.57\%), Dresses (26.91\%), Bottoms (16.18\%), Intimate (7.39\%), Jackets (4.39\%) và Trend (0.51\%).
-    \item \textbf{Phân loại trang phục (\texttt{Class Name})}: Gồm 20 lớp cụ thể, chiếm tỷ trọng cao nhất là Dresses (26.91\%), Knits (20.62\%), Blouses (13.19\%), Sweaters (6.08\%) và Pants (5.91\%).
+    \item Độ tuổi (\texttt{Age}): Phân bố từ 18 đến 99 tuổi, độ tuổi trung bình là 43.20 tuổi ($\pm 12.28$), tứ phân vị $Q_1 = 34$, trung vị 41, $Q_3 = 52$ tuổi. Nhóm khách hàng chủ yếu thuộc độ tuổi từ 30 đến 55.
+    \item Phân nhánh (\texttt{Division Name}): Gồm 3 nhóm chính: General (58.97\%), General Petite (34.57\%) và Initmates (6.40\%).
+    \item Bộ phận (\texttt{Department Name}): Gồm 6 nhóm chính: Tops (44.57\%), Dresses (26.91\%), Bottoms (16.18\%), Intimate (7.39\%), Jackets (4.39\%) và Trend (0.51\%).
+    \item Phân loại trang phục (\texttt{Class Name}): Gồm 20 lớp cụ thể, chiếm tỷ trọng cao nhất là Dresses (26.91\%), Knits (20.62\%), Blouses (13.19\%), Sweaters (6.08\%) và Pants (5.91\%).
 \end{itemize}
 
 \subsection{Quy trình tiền xử lý và phân chia dữ liệu}
 Quy trình chuẩn bị dữ liệu phục vụ huấn luyện bao gồm các bước:
-\begin{enumerate}[(i)]
-    \item \textbf{Tích hợp nội dung văn bản}: Điền giá trị rỗng cho \texttt{Title} và \texttt{Review Text}, sau đó ghép thành một trường văn bản duy nhất \texttt{text} = \texttt{Title} + \texttt{' '} + \texttt{Review Text}. Việc kết hợp này tận dụng tiêu đề ngắn gọn nhưng chứa nhiều từ ngữ cảm xúc cô đọng của người đánh giá.
-    \item \textbf{Xử lý biến phân loại}: Điền nhãn \texttt{'Unknown'} cho 14 giá trị khuyết thiếu trong \texttt{Division Name}, \texttt{Department Name} và \texttt{Class Name}.
-    \item \textbf{Phân chia tập huấn luyện và kiểm thử (Train/Test Split)}: Bộ dữ liệu được chia theo tỷ lệ 80:20 với kỹ thuật lấy mẫu phân tầng (\textit{Stratified Split}) dựa trên nhãn mục tiêu \texttt{Recommended IND} (\texttt{random\_state=42}).
+\begin{itemize}
+    \item Tích hợp nội dung văn bản: Điền giá trị rỗng cho \texttt{Title} và \texttt{Review Text}, sau đó ghép thành một trường văn bản duy nhất \texttt{text} = \texttt{Title} + \texttt{' '} + \texttt{Review Text}. Việc kết hợp này tận dụng tiêu đề ngắn gọn nhưng chứa nhiều từ ngữ cảm xúc cô đọng của người đánh giá.
+    \item Xử lý biến phân loại: Điền nhãn \texttt{'Unknown'} cho 14 giá trị khuyết thiếu trong \texttt{Division Name}, \texttt{Department Name} và \texttt{Class Name}.
+    \item Phân chia tập huấn luyện và kiểm thử (Train/Test Split): Bộ dữ liệu được chia theo tỷ lệ 80:20 với kỹ thuật lấy mẫu phân tầng (\textit{Stratified Split}) dựa trên nhãn mục tiêu \texttt{Recommended IND} (\texttt{random\_state=42}).
     \begin{itemize}
         \item Tập huấn luyện (\textit{Train Set}): 18.788 mẫu (chiếm 80.0\%), tỷ lệ lớp 1 là 82.24\%.
         \item Tập kiểm thử (\textit{Test Set}): 4.698 mẫu (chiếm 20.0\%), tỷ lệ lớp 1 là 82.24\%.
     \end{itemize}
     Tập kiểm thử được giữ độc lập hoàn toàn và chỉ sử dụng cho giai đoạn đánh giá cuối cùng.
-    \item \textbf{Tính toán trọng số bù trừ mất cân bằng lớp}: Tính toán tỷ lệ mẫu âm trên mẫu dương trên tập huấn luyện:
+    \item Tính toán trọng số bù trừ mất cân bằng lớp: Tính toán tỷ lệ mẫu âm trên mẫu dương trên tập huấn luyện:
     \begin{equation}
     \text{scale\_pos\_weight} = \frac{\sum (y_{\text{train}} == 0)}{\sum (y_{\text{train}} == 1)} = \frac{3348}{15440} \approx 0.216
     \end{equation}
     Hệ số này được sử dụng trực tiếp để hiệu chỉnh hàm mất mát trong mô hình XGBoost.
-\end{enumerate}
+\end{itemize}

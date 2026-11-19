@@ -1,6 +1,6 @@
 \section{Mô hình và phương pháp giải quyết bài toán}
 
-Phần này trình bày quy trình thực nghiệm thống nhất để giải quyết bài toán phân loại đánh giá sản phẩm thời trang nữ (\textit{Women's E-Commerce Clothing Reviews}). Quy trình bao gồm các bước: khảo sát biểu diễn văn bản và lựa chọn đặc trưng, khảo sát hàm Kernel của Support Vector Machine (SVM), thiết lập các mô hình cơ sở (Baseline Models), tinh chỉnh siêu tham số bằng \texttt{RandomizedSearchCV} kết hợp Stratified Cross-Validation tối ưu \texttt{f1\_macro} cho cả 4 lớp mô hình (Support Vector Machine, Logistic Regression, Multinomial Naive Bayes và XGBoost), cùng các kỹ thuật mở rộng nâng cao gồm học kết hợp (Ensemble Learning), xây dựng Pipeline khép kín cho \texttt{LinearSVC} và tích hợp siêu dữ liệu (XGBoost with Metadata).
+Phần này trình bày quy trình thực nghiệm thống nhất để giải quyết bài toán phân loại đánh giá sản phẩm thời trang nữ (\textit{Women's E-Commerce Clothing Reviews}). Quy trình bao gồm các bước: khảo sát biểu diễn văn bản và lựa chọn đặc trưng, khảo sát hàm Kernel của Support Vector Machine (SVM), thiết lập các mô hình cơ sở (Baseline Models), tinh chỉnh siêu tham số bằng \texttt{RandomizedSearchCV} kết hợp Stratified Cross-Validation tối ưu \texttt{f1\_macro} cho cả 4 lớp mô hình (Support Vector Machine, Logistic Regression, Multinomial Naive Bayes và XGBoost), cùng các kỹ thuật mở rộng nâng cao gồm học kết hợp (Ensemble Learning), xây dựng Pipeline khép kín cho \texttt{LinearSVC} và tích hợp siêu dữ liệu (XGBoost with Metadata). Toàn bộ mã nguồn thực nghiệm đầy đủ được đính kèm trong tập tin notebook \texttt{ML\_BTL\_Unified\_\allowbreak Womens\_Clothing\_Reviews.ipynb}.
 
 \subsection{Biểu diễn dữ liệu văn bản (Text Representation)}
 Trước khi đưa vào các mô hình học máy, văn bản đánh giá được chuyển đổi sang dạng vector đặc trưng số thông qua quá trình Tokenization. Trường \texttt{Title} chứa nhiều từ mang sắc thái tình cảm cô đọng (ví dụ: \textit{``Love it''}, \textit{``Flattering shirt''}, \textit{``Poor quality''}), do đó hai trường \texttt{Title} và \texttt{Review Text} sau khi điền chuỗi rỗng (\texttt{''}) cho các giá trị khuyết thiếu được ghép nối thành một trường văn bản hoàn chỉnh \texttt{text}.
@@ -8,8 +8,8 @@ Trước khi đưa vào các mô hình học máy, văn bản đánh giá đư�
 \subsubsection{So sánh phương pháp Tokenization (CountVectorizer vs TfidfVectorizer)}
 Sử dụng mô hình chuẩn \texttt{LinearSVC} (\texttt{random\_state=42}, \texttt{max\_iter=2000}) trên tập dữ liệu đã phân chia Stratified 80:20 để đánh giá tính hiệu quả giữa hai phương pháp:
 \begin{itemize}
-    \item \textbf{CountVectorizer (Bag-of-Words)}: Đếm tần số xuất hiện của từng từ trong văn bản.
-    \item \textbf{TfidfVectorizer}: Chuẩn hóa tần suất từ bằng nghịch đảo tần suất tài liệu (TF-IDF), làm mờ các từ xuất hiện đại trà và làm nổi bật các từ có tính phân loại cao.
+    \item CountVectorizer (Bag-of-Words): Đếm tần số xuất hiện của từng từ trong văn bản.
+    \item TfidfVectorizer: Chuẩn hóa tần suất từ bằng nghịch đảo tần suất tài liệu (TF-IDF), làm mờ các từ xuất hiện đại trà và làm nổi bật các từ có tính phân loại cao.
 \end{itemize}
 
 \begin{table}[H]
@@ -40,12 +40,12 @@ Ngoài ra, tham số \texttt{sublinear\_tf=True} được khảo sát nhằm tha
 \subsection{Lựa chọn đặc trưng (Feature Selection) với Filter Methods}
 Không gian từ vựng n-gram sau TF-IDF thường có số chiều rất lớn chứa nhiều từ thưa và nhiễu. Nhóm khảo sát phương pháp lọc \texttt{SelectKBest} với hai kiểm định thống kê:
 \begin{itemize}
-    \item \textbf{Chi-Square ($\chi^2$)}: Kiểm tra tính độc lập thống kê giữa sự xuất hiện của từ và phân bố nhãn:
+    \item Chi-Square ($\chi^2$): Kiểm tra tính độc lập thống kê giữa sự xuất hiện của từ và phân bố nhãn:
     \begin{equation}
     \chi^2 = \sum \frac{(O - E)^2}{E}
     \end{equation}
     với $O$ là tần số quan sát thực tế và $E$ là tần số kỳ vọng theo giả thiết độc lập.
-    \item \textbf{ANOVA F-Score}: So sánh phương sai giữa các nhóm nhãn với phương sai nội bộ từng nhóm ($F = \frac{\text{MSB}}{\text{MSW}}$).
+    \item ANOVA F-Score: So sánh phương sai giữa các nhóm nhãn với phương sai nội bộ từng nhóm ($F = \frac{\text{MSB}}{\text{MSW}}$).
 \end{itemize}
 
 Thực nghiệm khảo sát số lượng đặc trưng giữ lại $k \in \{500, 1000, 2000, 3000\}$ trên mô hình \texttt{LinearSVC}:
@@ -79,10 +79,10 @@ Bốn lớp thuật toán học máy được triển khai để giải quyết 
 \subsubsection{Support Vector Machine (SVM) và khảo sát các hàm Kernel}
 Support Vector Machine tìm kiếm siêu phẳng phân tách hai lớp sao cho lề (\textit{margin}) đến các điểm huấn luyện gần nhất (Support Vectors) là lớn nhất. Ta so sánh 4 hàm Kernel phổ biến trên cùng tập dữ liệu biểu diễn bằng TF-IDF (sử dụng tập mẫu phân tầng 4.000 quan sát để đánh giá nhanh thời gian huấn luyện và độ hội tụ):
 \begin{itemize}
-    \item \textbf{Linear Kernel}: $K(x, x') = x^\top x'$
-    \item \textbf{RBF Kernel}: $K(x, x') = \exp\left(-\gamma \|x - x'\|^2\right)$
-    \item \textbf{Polynomial Kernel}: $K(x, x') = (\gamma x^\top x' + r)^d \quad (d=2)$
-    \item \textbf{Sigmoid Kernel}: $K(x, x') = \tanh\left(\gamma x^\top x' + r\right)$
+    \item Linear Kernel: $K(x, x') = x^\top x'$
+    \item RBF Kernel: $K(x, x') = \exp\left(-\gamma \|x - x'\|^2\right)$
+    \item Polynomial Kernel: $K(x, x') = (\gamma x^\top x' + r)^d \quad (d=2)$
+    \item Sigmoid Kernel: $K(x, x') = \tanh\left(\gamma x^\top x' + r\right)$
 \end{itemize}
 
 \begin{table}[H]
@@ -99,7 +99,7 @@ SVC (Sigmoid) & 0.8929 & 0.9371 & 0.7885 & \textbf{3.50} \\ \hline
 \label{tab:kernel_eval}
 \end{table}
 
-Kết quả ở Bảng~\ref{tab:kernel_eval} cho thấy \textbf{Linear Kernel} chứng minh tính ưu việt trên dữ liệu TF-IDF số chiều lớn khi đạt hiệu năng cao nhất trên cả ba chỉ số: Accuracy (0.8946), F1 lớp 1 (0.9380) và Macro-F1 (0.7936), tiếp theo là Sigmoid Kernel (Macro-F1 0.7885, thời gian nhanh nhất 3.50 giây). Các kernel phi tuyến như RBF và Polynomial vừa tốn thời gian hơn vừa cho Macro-F1 thấp hơn rõ rệt. Do đó, mô hình SVM tuyến tính cài đặt tối ưu theo thuật toán tuyến tính (\texttt{LinearSVC}) được lựa chọn cho các bước đánh giá baseline, tinh chỉnh siêu tham số và học kết hợp.
+Kết quả ở Bảng~\ref{tab:kernel_eval} cho thấy \textbf{Linear Kernel} chứng minh tính ưu việt trên dữ liệu TF-IDF số chiều lớn khi đạt hiệu năng cao nhất trên cả ba chỉ số: Accuracy (0.8946), F1 lớp 1 (0.9380) và Macro-F1 (0.7936), tiếp theo là Sigmoid Kernel (Macro-F1 0.7885). Quan trọng hơn, về mặt chi phí tính toán, \texttt{SVC} sử dụng các kernel phi tuyến (như RBF, Sigmoid, Polynomial) có thời gian huấn luyện tăng rất nhanh khi mở rộng lên toàn bộ tập huấn luyện 18.788 mẫu, dẫn đến việc không thể tinh chỉnh siêu tham số đầy đủ trong quá trình kiểm định chéo (\texttt{RandomizedSearchCV} 5-Fold CV). Vì vậy, nhóm chỉ sử dụng \texttt{LinearSVC} (cài đặt tối ưu cho SVM tuyến tính, có tốc độ huấn luyện vượt trội) cho các bước mô hình cơ sở, tinh chỉnh siêu tham số và học kết hợp tiếp theo.
 
 \subsubsection{Hồi quy Logistic (Logistic Regression)}
 Logistic Regression ước lượng xác suất hậu nghiệm một quan sát thuộc lớp 1 thông qua hàm sigmoid:
@@ -132,7 +132,7 @@ Bằng khai triển Taylor bậc hai, trọng số tối ưu tại nút lá $j$ 
 \begin{equation}
 \text{scale\_pos\_weight} = \frac{n_{\text{neg}}}{n_{\text{pos}}} = \frac{3337}{15451} \approx 0.2160
 \end{equation}
-Quá trình huấn luyện sử dụng thuật toán histogram (\texttt{tree\_method='hist'}) và tăng tốc phần cứng bằng GPU (\texttt{device='cuda'}).
+Quá trình huấn luyện sử dụng thuật toán histogram (\texttt{tree\_method=\allowbreak'hist'}) và tăng tốc phần cứng bằng GPU (\texttt{device=\allowbreak'cuda'}).
 
 \subsection{Thước đo đánh giá, Mô hình cơ sở và Tinh chỉnh siêu tham số}
 
@@ -146,10 +146,10 @@ Trong đó, \texttt{Macro-F1} được chọn làm tiêu chí mục tiêu chính
 \subsubsection{Huấn luyện Mô hình cơ sở (Baseline Models)}
 Bốn mô hình cơ sở được huấn luyện trên cùng tập phân chia Stratified 80:20 (18.788 mẫu train, 4.698 mẫu test) sử dụng chung pipeline \texttt{TfidfVectorizer(ngram\_range=(1, 2), min\_df=2, sublinear\_tf=True)} (riêng XGBoost giới hạn \texttt{max\_features=5000}):
 \begin{itemize}
-    \item \textbf{SVM (LinearSVC baseline)}: $C=1.0$, \texttt{class\_weight='balanced'}.
-    \item \textbf{Logistic Regression (baseline)}: $C=1.0$, \texttt{class\_weight='balanced'}.
-    \item \textbf{XGBoost (baseline)}: $N=300$, \texttt{max\_depth=6}, \texttt{scale\_pos\_weight=0.2160}, histogram trên CUDA.
-    \item \textbf{Multinomial Naive Bayes (baseline)}: $\alpha=0.1$.
+    \item SVM (LinearSVC baseline): $C=1.0$, \texttt{class\_weight='balanced'}.
+    \item Logistic Regression (baseline): $C=1.0$, \texttt{class\_weight='balanced'}.
+    \item XGBoost (baseline): $N=300$, \texttt{max\_depth=6}, \texttt{scale\_pos\_weight=0.2160}, histogram trên CUDA.
+    \item Multinomial Naive Bayes (baseline): $\alpha=0.1$.
 \end{itemize}
 
 \begin{table}[H]
@@ -206,8 +206,8 @@ $\eta \approx 0.0858$; \texttt{max\_depth=6}; $N=539$; \texttt{min\_child=4}; \t
 \subsubsection{Học kết hợp (Ensemble Learning cho Support Vector Machine)}
 Nhóm khảo sát hai kỹ thuật học kết hợp trên không gian đặc trưng TF-IDF (\texttt{max\_features=5000}):
 \begin{itemize}
-    \item \textbf{Bagging (Bootstrap Aggregating)}: Giảm phương sai bằng cách huấn luyện song song $M=10$ mô hình cơ sở \texttt{LinearSVC} ($C=0.5$) trên các tập con mẫu lấy ngẫu nhiên có hoàn lại (\texttt{max\_samples=0.8}).
-    \item \textbf{Boosting (AdaBoost)}: Giảm độ chệch bằng cách huấn luyện tuần tự $50$ bộ phân loại yếu, tập trung tăng trọng số cho các mẫu bị phân loại sai ở bước trước.
+    \item Bagging (Bootstrap Aggregating): Giảm phương sai bằng cách huấn luyện song song $M=10$ mô hình cơ sở \texttt{LinearSVC} ($C=0.5$) trên các tập con mẫu lấy ngẫu nhiên có hoàn lại (\texttt{max\_samples=0.8}).
+    \item Boosting (AdaBoost): Giảm độ chệch bằng cách huấn luyện tuần tự $50$ bộ phân loại yếu, tập trung tăng trọng số cho các mẫu bị phân loại sai ở bước trước.
 \end{itemize}
 
 \begin{table}[H]
@@ -227,17 +227,50 @@ Kết quả ở Bảng~\ref{tab:ensemble_eval} khẳng định \texttt{Bagging (
 \subsubsection{Xây dựng Pipeline khép kín cho LinearSVC}
 Từ các tham số tối ưu tìm được ở bước tinh chỉnh \texttt{LinearSVC}, nhóm tích hợp thành một Pipeline khép kín (\texttt{LinearSVC + Bagging Pipeline}):
 \begin{enumerate}
-    \item \textbf{Vector hóa}: \texttt{TfidfVectorizer} với \texttt{min\_df=2}, \texttt{ngram\_range=(1, 3)}, \texttt{max\_features=None}, \texttt{sublinear\_tf=True}.
-    \item \textbf{Lọc đặc trưng}: \texttt{SelectKBest} ($\chi^2$, \texttt{k='all'}).
-    \item \textbf{Học tổ hợp}: \texttt{BaggingClassifier} sử dụng bộ phân loại cơ sở \texttt{LinearSVC} ($C \approx 1.0873$, \texttt{class\_weight='balanced'}, \texttt{max\_iter=5000}) với \texttt{n\_estimators=10}, \texttt{max\_samples=0.8}.
+    \item Vector hóa: \texttt{TfidfVectorizer} với các tham số \texttt{min\_df=2}, \texttt{ngram\_range=(1, 3)}, \texttt{max\_features=None} và \texttt{sublinear\_tf=True}.
+    \item Lọc đặc trưng: \texttt{SelectKBest} ($\chi^2$, \texttt{k='all'}).
+    \item Học tổ hợp: \texttt{BaggingClassifier} sử dụng bộ phân loại cơ sở \texttt{LinearSVC} ($C \approx 1.0873$, \texttt{class\_weight=\allowbreak'balanced'}, \texttt{max\_iter=5000}) với \texttt{n\_estimators=10}, \texttt{max\_samples=0.8}.
 \end{enumerate}
+
+\begin{lstlisting}[caption={Cài đặt Pipeline khép kín cho mô hình LinearSVC + Bagging}, label={lst:svm_pipeline}]
+svm_pipeline_complete = Pipeline([
+    ('tfidf', TfidfVectorizer(min_df=2, **tf_svm_params)),
+    ('selector', SelectKBest(score_func=chi2, **sel_svm_params)),
+    ('bagging_svm', BaggingClassifier(
+        estimator=LinearSVC(
+            class_weight='balanced', random_state=42,
+            max_iter=5000, **svm_clf_params
+        ),
+        n_estimators=10, max_samples=0.8, random_state=42, n_jobs=1
+    ))
+])
+\end{lstlisting}
+
 Pipeline hoàn tất huấn luyện trong 18.17 giây, đạt Accuracy 0.9159 và Macro-F1 0.8547 trên tập kiểm thử.
 
 \subsubsection{Tích hợp siêu dữ liệu (XGBoost with Metadata)}
 Bên cạnh nội dung văn bản thuần túy, bộ dữ liệu cung cấp thông tin ngữ cảnh khách hàng và danh mục sản phẩm. Kiến trúc \texttt{ColumnTransformer} được xây dựng để ghép nối liền mạch ba nguồn đặc trưng:
 \begin{itemize}
-    \item \textbf{Cột văn bản (\texttt{text})}: Mã hóa bằng \texttt{TfidfVectorizer(sublinear\_tf=True)} với bộ tham số tối ưu từ bước tuning XGBoost (\texttt{ngram\_range=(1, 2)}, \texttt{min\_df=3}, \texttt{max\_features=10000}).
-    \item \textbf{Cột phân loại (\texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name})}: Mã hóa One-Hot bằng \texttt{OneHotEncoder(handle\_unknown='ignore')}.
-    \item \textbf{Cột số học (\texttt{Age})}: Truyền trực tiếp qua \texttt{passthrough}.
+    \item Cột văn bản (\texttt{text}): Mã hóa bằng \texttt{TfidfVectorizer(sublinear\_tf=True)} với bộ tham số tối ưu từ bước tuning XGBoost (\texttt{ngram\_range=(1, 2)}, \texttt{min\_df=3}, \texttt{max\_features=10000}).
+    \item Cột phân loại (\texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}): Mã hóa One-Hot bằng \texttt{OneHotEncoder(\allowbreak handle\_unknown='ignore')}.
+    \item Cột số học (\texttt{Age}): Truyền trực tiếp qua \texttt{passthrough}.
 \end{itemize}
+
+\begin{lstlisting}[caption={Kiến trúc ColumnTransformer kết hợp văn bản TF-IDF và siêu dữ liệu cho XGBoost}, label={lst:xgb_meta}]
+meta_preprocessor = ColumnTransformer([
+    ('tfidf', TfidfVectorizer(sublinear_tf=True, **tf_xgb_params), 'text'),
+    ('cat', OneHotEncoder(handle_unknown='ignore'),
+     ['Division Name', 'Department Name', 'Class Name']),
+    ('age', 'passthrough', ['Age']),
+])
+
+xgb_metadata_pipeline = Pipeline([
+    ('pre', meta_preprocessor),
+    ('clf', XGBClassifier(
+        **xgb_best_params, scale_pos_weight=spw, tree_method='hist',
+        device=device_type, eval_metric='logloss', n_jobs=1, random_state=42
+    )),
+])
+\end{lstlisting}
+
 Mô hình \texttt{XGBoost + metadata} hoàn tất huấn luyện trên GPU trong 11.30 giây và được đưa vào đối chiếu trực tiếp với các mô hình chỉ dùng văn bản ở phần tiếp theo.
