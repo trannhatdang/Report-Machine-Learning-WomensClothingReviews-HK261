@@ -1,12 +1,12 @@
 \section{Mô hình và phương pháp giải quyết bài toán}
 
-Phần này trình bày quy trình thực nghiệm thống nhất để giải quyết bài toán phân loại đánh giá sản phẩm thời trang nữ (\textit{Women's E-Commerce Clothing Reviews}). Quy trình bao gồm các bước: khảo sát biểu diễn văn bản và lựa chọn đặc trưng, khảo sát hàm Kernel của Support Vector Machine (SVM), thiết lập các mô hình cơ sở (Baseline Models), tinh chỉnh siêu tham số bằng \texttt{RandomizedSearchCV} kết hợp Stratified Cross-Validation tối ưu \texttt{f1\_macro} cho cả 4 lớp mô hình (Support Vector Machine, Logistic Regression, Multinomial Naive Bayes và XGBoost), cùng các kỹ thuật mở rộng nâng cao gồm học kết hợp (Ensemble Learning), xây dựng Pipeline khép kín cho \texttt{LinearSVC} và tích hợp siêu dữ liệu (XGBoost with Metadata). Toàn bộ mã nguồn thực nghiệm đầy đủ được đính kèm trong tập tin notebook \texttt{ML\_BTL\_Unified\_\allowbreak Womens\_Clothing\_Reviews.ipynb}.
+Phần này trình bày quy trình thực nghiệm thống nhất để giải quyết bài toán phân loại đánh giá sản phẩm thời trang nữ (\textit{Women's E-Commerce Clothing Reviews}). Quy trình bao gồm các bước: khảo sát biểu diễn văn bản và lựa chọn đặc trưng, khảo sát hàm Kernel của Support Vector Machine (SVM), thiết lập các mô hình cơ sở (Baseline Models), tinh chỉnh siêu tham số bằng RandomizedSearchCV kết hợp Stratified Cross-Validation tối ưu Macro-F1 cho cả 4 lớp mô hình (Support Vector Machine, Logistic Regression, Multinomial Naive Bayes và XGBoost), cùng các kỹ thuật mở rộng nâng cao gồm học kết hợp (Ensemble Learning), xây dựng Pipeline khép kín cho LinearSVC và tích hợp siêu dữ liệu (XGBoost with Metadata). Toàn bộ mã nguồn thực nghiệm đầy đủ được đính kèm trong tập tin notebook \texttt{ML\_BTL\_Unified\_\allowbreak Womens\_Clothing\_Reviews.ipynb}.
 
 \subsection{Biểu diễn dữ liệu văn bản (Text Representation)}
 Trước khi đưa vào các mô hình học máy, văn bản đánh giá được chuyển đổi sang dạng vector đặc trưng số thông qua quá trình Tokenization. Trường \texttt{Title} chứa nhiều từ mang sắc thái tình cảm cô đọng (ví dụ: \textit{``Love it''}, \textit{``Flattering shirt''}, \textit{``Poor quality''}), do đó hai trường \texttt{Title} và \texttt{Review Text} sau khi điền chuỗi rỗng (\texttt{''}) cho các giá trị khuyết thiếu được ghép nối thành một trường văn bản hoàn chỉnh \texttt{text}.
 
 \subsubsection{So sánh phương pháp Tokenization (CountVectorizer vs TfidfVectorizer)}
-Sử dụng mô hình chuẩn \texttt{LinearSVC} (\texttt{random\_state=42}, \texttt{max\_iter=2000}) trên tập dữ liệu đã phân chia Stratified 80:20 để đánh giá tính hiệu quả giữa hai phương pháp:
+Sử dụng mô hình chuẩn LinearSVC (\texttt{random\_state=42}, \texttt{max\_iter=2000}) trên tập dữ liệu đã phân chia Stratified 80:20 để đánh giá tính hiệu quả giữa hai phương pháp:
 \begin{itemize}
     \item CountVectorizer (Bag-of-Words): Đếm tần số xuất hiện của từng từ trong văn bản.
     \item TfidfVectorizer: Chuẩn hóa tần suất từ bằng nghịch đảo tần suất tài liệu (TF-IDF), làm mờ các từ xuất hiện đại trà và làm nổi bật các từ có tính phân loại cao.
@@ -24,21 +24,21 @@ TfidfVectorizer & \textbf{0.9025} & \textbf{0.8218} & \textbf{0.9417} & \textbf{
 \label{tab:tokenizers_eval}
 \end{table}
 
-Kết quả ở Bảng~\ref{tab:tokenizers_eval} cho thấy \texttt{TfidfVectorizer} vượt trội toàn diện so với \texttt{CountVectorizer} trên cả Accuracy (0.9025 so với 0.8846), Macro-F1 (0.8218 so với 0.7959), F1 lớp 1 (0.9417 so với 0.9305) lẫn tốc độ thực thi nhanh hơn gấp đôi (0.88 giây so với 2.09 giây). Do đó, \texttt{TfidfVectorizer} được lựa chọn làm phương pháp biểu diễn văn bản chính cho toàn bộ quy trình.
+Kết quả ở Bảng~\ref{tab:tokenizers_eval} cho thấy TfidfVectorizer vượt trội toàn diện so với CountVectorizer trên cả Accuracy (0.9025 so với 0.8846), Macro-F1 (0.8218 so với 0.7959), F1 lớp 1 (0.9417 so với 0.9305) lẫn tốc độ thực thi nhanh hơn gấp đôi (0.88 giây so với 2.09 giây). Do đó, TfidfVectorizer được lựa chọn làm phương pháp biểu diễn văn bản chính cho toàn bộ quy trình.
 
 \subsubsection{Cơ sở toán học của TF-IDF}
 TF-IDF giảm trọng số của các từ xuất hiện phổ biến trong nhiều văn bản và tăng trọng số của các từ có tính phân biệt cao:
 \begin{equation}
 \text{tfidf}(t, d) = \text{tf}(t, d) \times \text{idf}(t), \qquad \text{idf}(t) = \ln\frac{1 + n}{1 + \text{df}(t)} + 1
 \end{equation}
-Trong đó, $n$ là tổng số văn bản trong tập dữ liệu và $\text{df}(t)$ là số văn bản có chứa từ $t$. Đây là công thức có làm trơn (\textit{smooth IDF}) theo cài đặt của scikit-learn. Các vector đặc trưng sau đó được chuẩn hóa theo chuẩn $L_2$:
+Trong đó, $n$ là tổng số văn bản trong tập dữ liệu và $\text{df}(t)$ là số văn bản có chứa từ $t$. Đây là công thức có làm trơn (\textit{smooth IDF}) theo cài đặt của thư viện scikit-learn. Các vector đặc trưng sau đó được chuẩn hóa theo chuẩn $L_2$:
 \begin{equation}
 v_{\text{norm}} = \frac{v}{\|v\|_2} = \frac{v}{\sqrt{\sum_j v_j^2}}
 \end{equation}
-Ngoài ra, tham số \texttt{sublinear\_tf=True} được khảo sát nhằm thay thế tần suất từ $\text{tf}$ bằng $1 + \ln(\text{tf})$, giúp giảm thiểu ảnh hưởng áp đảo của các từ lặp lại quá nhiều lần. Các ngưỡng \texttt{min\_df}, \texttt{max\_features} và \texttt{ngram\_range} được đưa vào trong cấu trúc \texttt{Pipeline} để vừa tối ưu kích thước từ vựng vừa ngăn chặn hoàn toàn hiện tượng rò rỉ dữ liệu (\textit{data leakage}) trong quá trình kiểm định chéo.
+Ngoài ra, tham số \texttt{sublinear\_tf=True} được khảo sát nhằm thay thế tần suất từ $\text{tf}$ bằng $1 + \ln(\text{tf})$, giúp giảm thiểu ảnh hưởng áp đảo của các từ lặp lại quá nhiều lần. Các ngưỡng \texttt{min\_df}, \texttt{max\_features} và \texttt{ngram\_range} được đưa vào trong cấu trúc Pipeline để vừa tối ưu kích thước từ vựng vừa ngăn chặn hoàn toàn hiện tượng rò rỉ dữ liệu (\textit{data leakage}) trong quá trình kiểm định chéo.
 
 \subsection{Lựa chọn đặc trưng (Feature Selection) với Filter Methods}
-Không gian từ vựng n-gram sau TF-IDF thường có số chiều rất lớn chứa nhiều từ thưa và nhiễu. Nhóm khảo sát phương pháp lọc \texttt{SelectKBest} với hai kiểm định thống kê:
+Không gian từ vựng n-gram sau TF-IDF thường có số chiều rất lớn chứa nhiều từ thưa và nhiễu. Nhóm khảo sát phương pháp lọc SelectKBest với hai kiểm định thống kê đơn biến:
 \begin{itemize}
     \item Chi-Square ($\chi^2$): Kiểm tra tính độc lập thống kê giữa sự xuất hiện của từ và phân bố nhãn:
     \begin{equation}
@@ -48,7 +48,7 @@ Không gian từ vựng n-gram sau TF-IDF thường có số chiều rất lớn
     \item ANOVA F-Score: So sánh phương sai giữa các nhóm nhãn với phương sai nội bộ từng nhóm ($F = \frac{\text{MSB}}{\text{MSW}}$).
 \end{itemize}
 
-Thực nghiệm khảo sát số lượng đặc trưng giữ lại $k \in \{500, 1000, 2000, 3000\}$ trên mô hình \texttt{LinearSVC}:
+Thực nghiệm khảo sát số lượng đặc trưng giữ lại $k \in \{500, 1000, 2000, 3000\}$ trên mô hình LinearSVC:
 
 \begin{table}[H]
 \centering
@@ -71,7 +71,7 @@ Thực nghiệm khảo sát số lượng đặc trưng giữ lại $k \in \{500
 \label{fig:fs_chart}
 \end{figure}
 
-Qua Bảng~\ref{tab:fs_eval} và Hình~\ref{fig:fs_chart}, việc giảm chiều đặc trưng về mức $k = 2000$ đạt Macro-F1 cao nhất cho cả hai phương pháp (0.8374 với ANOVA F-Score và 0.8342 với Chi-Square), cải thiện đáng kể so với dùng toàn bộ từ vựng TF-IDF mặc định (0.8218), đồng thời giảm chi phí tính toán cho các bước huấn luyện sau.
+Qua Bảng~\ref{tab:fs_eval} và Hình~\ref{fig:fs_chart}, trong điều kiện vector hóa mặc định (unigram), việc giảm chiều đặc trưng về mức $k = 2000$ đạt Macro-F1 cao nhất cho cả hai phương pháp (0.8374 với ANOVA F-Score và 0.8342 với Chi-Square), cải thiện đáng kể so với việc dùng toàn bộ từ vựng TF-IDF ban đầu (0.8218), đồng thời giảm chi phí tính toán cho mô hình. Tuy nhiên, kết quả này được quan sát trên không gian từ đơn (unigram); khi mở rộng sang cụm từ $n$-gram $(1, 3)$ ở bước tinh chỉnh Pipeline toàn diện (Mục 3.4.3), tham số $k$ sẽ được đưa vào không gian tìm kiếm tự động để đối chiếu lại giữa việc giữ lại toàn bộ ($k=\text{'all'}$) và lọc giảm chiều.
 
 \subsection{Các mô hình học máy giải quyết bài toán}
 Bốn lớp thuật toán học máy được triển khai để giải quyết bài toán phân loại nhị phân (0: Không đề xuất, 1: Có đề xuất sản phẩm):
@@ -89,7 +89,7 @@ Support Vector Machine tìm kiếm siêu phẳng phân tách hai lớp sao cho l
 \centering
 \begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{SVM Kernel} & \textbf{Accuracy} & \textbf{F1 (Class 1)} & \textbf{Macro-F1} & \textbf{Thời gian huấn luyện (giây)} \\ \hline
+\textbf{SVM Kernel} & \textbf{Accuracy} & \textbf{F1 (Lớp 1)} & \textbf{Macro-F1} & \textbf{Thời gian huấn luyện (giây)} \\ \hline
 SVC (Linear) & \textbf{0.8946} & \textbf{0.9380} & \textbf{0.7936} & 4.21 \\ \hline
 SVC (RBF) & 0.8817 & 0.9318 & 0.7431 & 6.00 \\ \hline
 SVC (Poly, deg=2) & 0.8650 & 0.9232 & 0.6845 & 6.04 \\ \hline
@@ -99,7 +99,9 @@ SVC (Sigmoid) & 0.8929 & 0.9371 & 0.7885 & \textbf{3.50} \\ \hline
 \label{tab:kernel_eval}
 \end{table}
 
-Kết quả ở Bảng~\ref{tab:kernel_eval} cho thấy \textbf{Linear Kernel} chứng minh tính ưu việt trên dữ liệu TF-IDF số chiều lớn khi đạt hiệu năng cao nhất trên cả ba chỉ số: Accuracy (0.8946), F1 lớp 1 (0.9380) và Macro-F1 (0.7936), tiếp theo là Sigmoid Kernel (Macro-F1 0.7885). Quan trọng hơn, về mặt chi phí tính toán, \texttt{SVC} sử dụng các kernel phi tuyến (như RBF, Sigmoid, Polynomial) có thời gian huấn luyện tăng rất nhanh khi mở rộng lên toàn bộ tập huấn luyện 18.788 mẫu, dẫn đến việc không thể tinh chỉnh siêu tham số đầy đủ trong quá trình kiểm định chéo (\texttt{RandomizedSearchCV} 5-Fold CV). Vì vậy, nhóm chỉ sử dụng \texttt{LinearSVC} (cài đặt tối ưu cho SVM tuyến tính, có tốc độ huấn luyện vượt trội) cho các bước mô hình cơ sở, tinh chỉnh siêu tham số và học kết hợp tiếp theo.
+Kết quả ở Bảng~\ref{tab:kernel_eval} cho thấy \textbf{Linear Kernel} chứng minh tính ưu việt trên dữ liệu TF-IDF số chiều lớn khi đạt hiệu năng cao nhất trên cả ba chỉ số: Accuracy (0.8946), F1 lớp 1 (0.9380) và Macro-F1 (0.7936).
+
+Về mặt độ phức tạp tính toán, lớp \texttt{SVC} trong scikit-learn dựa trên thư viện LIBSVM, sử dụng thuật toán tối ưu hóa tuần tự SMO (\textit{Sequential Minimal Optimization}) với độ phức tạp thời gian nằm trong khoảng từ $\mathcal{O}(N^2)$ đến $\mathcal{O}(N^3)$ theo số lượng mẫu $N$. Khi mở rộng lên toàn bộ tập dữ liệu huấn luyện gồm 18.788 mẫu kết hợp kiểm định chéo phân tầng 5-Fold, chi phí tính toán của các kernel phi tuyến tăng vọt và không khả thi cho quá trình tinh chỉnh tham số lớn. Ngược lại, lớp \texttt{LinearSVC} dựa trên thư viện LIBLINEAR, giải bài toán đối ngẫu tuyến tính bằng thuật toán Coordinate Descent với độ phức tạp xấp xỉ $\mathcal{O}(N \cdot D)$ (với $D$ là số lượng đặc trưng). Nhờ đó, \texttt{LinearSVC} huấn luyện nhanh hơn hàng chục lần so với \texttt{SVC(kernel='linear')} mà vẫn bảo đảm tính hội tụ và độ chính xác tối ưu. Do đó, nhóm quyết định lựa chọn \texttt{LinearSVC} cho toàn bộ các bước thiết lập mô hình cơ sở, tinh chỉnh siêu tham số và học kết hợp tiếp theo.
 
 \subsubsection{Hồi quy Logistic (Logistic Regression)}
 Logistic Regression ước lượng xác suất hậu nghiệm một quan sát thuộc lớp 1 thông qua hàm sigmoid:
@@ -137,11 +139,11 @@ Quá trình huấn luyện sử dụng thuật toán histogram (\texttt{tree\_me
 \subsection{Thước đo đánh giá, Mô hình cơ sở và Tinh chỉnh siêu tham số}
 
 \subsubsection{Thước đo đánh giá cho dữ liệu mất cân bằng}
-Với tỷ lệ 82.24\% lớp 1 và 17.76\% lớp 0, chỉ số Accuracy thông thường không phản ánh trọn vẹn khả năng nhận diện lớp thiểu số. Khung đánh giá chuẩn theo dõi đồng thời các chỉ số: \texttt{Accuracy}, \texttt{F1 (Class 1)}, \texttt{F1 (Class 0)}, \texttt{Macro-F1}, \texttt{Recall (Class 0)}, \texttt{ROC-AUC} và \texttt{Fit Time (s)}:
+Với tỷ lệ 82.24\% lớp 1 và 17.76\% lớp 0, chỉ số Accuracy thông thường không phản ánh trung thực khả năng nhận diện lớp thiểu số (nếu dự đoán toàn bộ là lớp 1 thì Accuracy vẫn đạt 82.24\% nhưng hoàn toàn bỏ sót các đánh giá tiêu cực). Khung đánh giá chuẩn theo dõi đồng thời các chỉ số: Accuracy, F1 lớp 1, F1 lớp 0, Macro-F1, Recall lớp 0, ROC-AUC và Fit Time (s):
 \begin{equation}
 \text{Macro-F1} = \frac{1}{2}\left(F_1^{(0)} + F_1^{(1)}\right)
 \end{equation}
-Trong đó, \texttt{Macro-F1} được chọn làm tiêu chí mục tiêu chính (\texttt{scoring='f1\_macro'}) để tối ưu và xếp hạng các mô hình. Với các mô hình không cung cấp \texttt{predict\_proba} như \texttt{LinearSVC}, giá trị \texttt{decision\_function} được chuẩn hóa min-max để tính \texttt{ROC-AUC}.
+Trong đó, Macro-F1 được chọn làm tiêu chí mục tiêu chính (\texttt{scoring='f1\_macro'}) để tối ưu và xếp hạng các mô hình. Với các mô hình không cung cấp \texttt{predict\_proba} như LinearSVC, giá trị hàm quyết định \texttt{decision\_function} được chuẩn hóa min-max để tính ROC-AUC.
 
 \subsubsection{Huấn luyện Mô hình cơ sở (Baseline Models)}
 Bốn mô hình cơ sở được huấn luyện trên cùng tập phân chia Stratified 80:20 (18.788 mẫu train, 4.698 mẫu test) sử dụng chung pipeline \texttt{TfidfVectorizer(ngram\_range=(1, 2), min\_df=2, sublinear\_tf=True)} (riêng XGBoost giới hạn \texttt{max\_features=5000}):
@@ -168,13 +170,25 @@ NaiveBayes (baseline) & 0.9040 & 0.9433 & 0.6879 & 0.8156 & 0.5952 & 0.9484 & \t
 \label{tab:baseline_results}
 \end{table}
 
-Kết quả kiểm thử các mô hình Baseline tương đối nhau, chỉ cách nhau xấp xỉ 0.1 điểm, trong đó SVM (Linear) có điểm nhỉnh hơn so với các model còn lại. 
-Naive Bayes có thời gian huấn luyện ngắn nhất (dưới 1s) nhưng có điểm F1 cho class 0 thấp hơn hẳn những model còn lại (0.5952 so với 0.75 trở lên cho các model còn lại). Sỡ dĩ Naive Bayes có tốc độ nhanh do chỉ mất 1 pass dữ liệu để tìm được các trọng số cho model.
-XGBoost có thời gian huấn luyện lâu nhất, hơn 7s, nhưng không có kết quả vượt trội so với các model còn lại. XGBoost cần đi qua tổ hợp của nhiều cây quyết định để tìm được trọng số tối ưu.
+Kết quả kiểm thử của 4 mô hình cơ sở khá sát sao, độ chênh lệch Macro-F1 giữa mô hình cao nhất (SVM-Linear: 0.8532) và thấp nhất (Naive Bayes: 0.8156) chưa tới 0.04 điểm (Bảng~\ref{tab:baseline_results}). Trong đó, SVM-Linear đạt kết quả tổng thể tốt nhất, tiếp theo là Logistic Regression (0.8510) với chỉ số Recall lớp 0 cao nhất (0.8599). 
 
+Multinomial Naive Bayes có thời gian huấn luyện nhanh nhất (1.84 giây) do thuật toán chỉ cần duyệt qua dữ liệu một lần (single pass) để thống kê tần suất xuất hiện của từ vựng. Tuy nhiên, mô hình này có độ hồi quy (Recall) cho lớp 0 thấp hơn đáng kể so với các mô hình còn lại (0.5952 so với trên 0.77), kéo điểm F1 của lớp 0 xuống 0.6879. Sở dĩ có hiện tượng này là do giả định độc lập có điều kiện của Naive Bayes bỏ qua mối tương quan ngữ cảnh giữa các từ ngữ phủ định trong câu văn đánh giá.
+
+XGBoost có thời gian huấn luyện lâu nhất trong nhóm cơ sở (7.85 giây trên GPU) và đạt Macro-F1 0.8396. Do bản chất thuật toán cần duyệt xây dựng tuần tự hàng trăm cây quyết định trên không gian ma trận TF-IDF có số chiều đặc trưng thưa rất lớn, XGBoost không thể hiện ưu thế vượt trội so với các mô hình tuyến tính ở bài toán văn bản thuần túy.
 
 \subsubsection{Tinh chỉnh siêu tham số với RandomizedSearchCV}
-Nhóm áp dụng \texttt{RandomizedSearchCV} kết hợp kiểm định chéo phân tầng (\textit{Stratified 5-Fold CV} cho Logistic Regression, Naive Bayes, LinearSVC; \textit{Stratified 3-Fold CV} với \texttt{n\_jobs=1} trên CUDA cho XGBoost) nhằm tối ưu hàm mục tiêu \texttt{scoring='f1\_macro'}. Bảng~\ref{tab:tuning_summary} tổng hợp không gian tìm kiếm, cấu hình tối ưu và điểm CV tốt nhất của cả 4 mô hình.
+Nhóm áp dụng RandomizedSearchCV kết hợp kiểm định chéo phân tầng (\textit{Stratified 5-Fold CV} cho Logistic Regression, Naive Bayes, LinearSVC; \textit{Stratified 3-Fold CV} với \texttt{n\_jobs=1} trên CUDA cho XGBoost) nhằm tối ưu hàm mục tiêu \texttt{scoring='f1\_macro'}.
+
+Các siêu tham số chính được khảo sát bao gồm:
+\begin{itemize}
+    \item $C$ (LinearSVC và Logistic Regression): Nghịch đảo của cường độ điều chuẩn $L_2$. Giá trị $C$ lớn nới lỏng mức độ phạt trọng số, ưu tiên cực tiểu sai số huấn luyện (lề hẹp); giá trị $C$ nhỏ tăng cường phạt nhằm ngăn ngừa hiện tượng quá khớp (lề rộng).
+    \item $\alpha$ (Multinomial Naive Bayes): Hệ số làm trơn Laplace/Lidstone nhằm khắc phục bài toán xác suất bằng 0 khi gặp các từ vựng chưa từng xuất hiện trong tập huấn luyện của lớp tương ứng.
+    \item $\eta$ (\texttt{learning\_rate} trong XGBoost): Hệ số co hẹp bước nhảy sau mỗi cây được cộng thêm, giúp kiểm soát tốc độ học và nâng cao tính khái quát của mô hình.
+    \item \texttt{max\_depth} và \texttt{min\_child\_weight} (XGBoost): Giới hạn độ sâu tối đa và tổng trọng số Hessian tối thiểu tại mỗi nút lá nhằm khống chế độ phức tạp của từng cây thành phần.
+    \item \texttt{subsample} và \texttt{colsample\_bytree} (XGBoost): Tỷ lệ lấy mẫu ngẫu nhiên không hoàn lại theo dòng (mẫu quan sát) và theo cột (đặc trưng) trước khi xây dựng mỗi cây, giúp tăng tính đa dạng tương tự cơ chế Random Forest.
+\end{itemize}
+
+Bảng~\ref{tab:tuning_summary} tổng hợp không gian tìm kiếm, cấu hình tối ưu và điểm CV tốt nhất của cả 4 mô hình.
 
 \begin{table}[H]
 \centering
@@ -206,15 +220,16 @@ $\eta \approx 0.0858$; \texttt{max\_depth=6}; $N=539$; \texttt{min\_child=4}; \t
 \label{tab:tuning_summary}
 \end{table}
 
-Với tính chất ngẫu nhiên của RandomizedSearchCV, không thể gọi cấu hình trên là tối ưu, mà là xấp xỉ của một cấu hình tối ưu có thể tìm được ở không gian của mọi cấu hình có thể.
-Chúng em chấp nhận sử dụng các cấu hình được tìm bởi RandomizedSearchCV và coi chúng là cấu hình tối ưu do thời lượng tìm kiếm của RandomizedSearchCV ngắn hơn rất nhiều so với GridSearchCV (tìm kiếm mọi cấu hình có thể).
+Đáng chú ý, trong quá trình tinh chỉnh Pipeline của LinearSVC, tham số lựa chọn đặc trưng tối ưu được chọn là $k=\text{'all'}$ thay vì $k=2000$ như ở thử nghiệm đơn biến tại Mục 3.2. Điều này hoàn toàn phù hợp với lý thuyết biểu diễn văn bản: khi mở rộng không gian từ vựng sang cụm từ $n$-gram $(1, 3)$, nhiều cụm 2 từ hoặc 3 từ quan trọng (như \textit{``not flattering at all''}, \textit{``would not recommend''}) có thể có tần số xuất hiện thấp trên toàn bộ tập dữ liệu nhưng lại mang giá trị định hướng cảm xúc rất cao. Việc áp dụng bộ lọc đơn biến thống kê ($\chi^2$) trước khi đưa vào mô hình có thể vô tình loại bỏ các cụm từ quan trọng này. Trong khi đó, bộ phân loại LinearSVC với hàm phạt điều chuẩn $L_2$ ($C \approx 1.0873$) đã tự động điều chỉnh và triệt tiêu trọng số của các đặc trưng nhiễu một cách hiệu quả, cho phép mô hình tận dụng tối đa toàn bộ không gian đặc trưng mà không bị quá khớp, giúp đạt Macro-F1 kiểm định chéo cao nhất là 0.8538.
+
+Với tính chất ngẫu nhiên của RandomizedSearchCV, cấu hình tìm được là lời giải xấp xỉ tốt cho cấu hình tối ưu toàn cục trong không gian tìm kiếm rộng lớn. Nhóm chấp nhận sử dụng các cấu hình được tìm bởi RandomizedSearchCV do thời lượng tìm kiếm ngắn hơn rất nhiều so với GridSearchCV (vốn đòi hỏi quét toàn bộ lưới tổ hợp), đồng thời vẫn bảo đảm tính đại diện và hiệu năng vượt trội cho mô hình.
 
 \subsection{Kỹ thuật mở rộng nâng cao (Advanced Experiments)}
 
 \subsubsection{Học kết hợp (Ensemble Learning cho Support Vector Machine)}
 Nhóm khảo sát hai kỹ thuật học kết hợp trên không gian đặc trưng TF-IDF (\texttt{max\_features=5000}):
 \begin{itemize}
-    \item Bagging (Bootstrap Aggregating): Giảm phương sai bằng cách huấn luyện song song $M=10$ mô hình cơ sở \texttt{LinearSVC} ($C=0.5$) trên các tập con mẫu lấy ngẫu nhiên có hoàn lại (\texttt{max\_samples=0.8}).
+    \item Bagging (Bootstrap Aggregating): Giảm phương sai bằng cách huấn luyện song song $M=10$ mô hình cơ sở LinearSVC ($C=0.5$) trên các tập con mẫu lấy ngẫu nhiên có hoàn lại (\texttt{max\_samples=0.8}).
     \item Boosting (AdaBoost): Giảm độ chệch bằng cách huấn luyện tuần tự $50$ bộ phân loại yếu, tập trung tăng trọng số cho các mẫu bị phân loại sai ở bước trước.
 \end{itemize}
 
@@ -230,14 +245,14 @@ AdaBoostClassifier & 0.8442 & 0.6134 & 0.9121 & 10.08 \\ \hline
 \label{tab:ensemble_eval}
 \end{table}
 
-Kết quả ở Bảng~\ref{tab:ensemble_eval} khẳng định \texttt{Bagging (LinearSVC)} vượt trội hoàn toàn so với \texttt{AdaBoostClassifier} cả về Macro-F1 (0.8233 so với 0.6134), Accuracy (0.9044 so với 0.8442) lẫn tốc độ huấn luyện (2.22 giây so với 10.08 giây).
+Kết quả ở Bảng~\ref{tab:ensemble_eval} khẳng định Bagging (LinearSVC) vượt trội hoàn toàn so với AdaBoostClassifier cả về Macro-F1 (0.8233 so với 0.6134), Accuracy (0.9044 so với 0.8442) lẫn tốc độ huấn luyện (2.22 giây so với 10.08 giây).
 
 \subsubsection{Xây dựng Pipeline khép kín cho LinearSVC}
-Từ các tham số tối ưu tìm được ở bước tinh chỉnh \texttt{LinearSVC}, nhóm tích hợp thành một Pipeline khép kín (\texttt{LinearSVC + Bagging Pipeline}):
+Từ các tham số tối ưu tìm được ở bước tinh chỉnh LinearSVC, nhóm tích hợp thành một Pipeline khép kín (LinearSVC + Bagging Pipeline):
 \begin{itemize}
-    \item Vector hóa: \texttt{TfidfVectorizer} với các tham số \texttt{min\_df=2}, \texttt{ngram\_range=(1, 3)}, \texttt{max\_features=None} và \texttt{sublinear\_tf=True}.
-    \item Lọc đặc trưng: \texttt{SelectKBest} ($\chi^2$, \texttt{k='all'}).
-    \item Học tổ hợp: \texttt{BaggingClassifier} sử dụng bộ phân loại cơ sở \texttt{LinearSVC} ($C \approx 1.0873$, \texttt{class\_weight=\allowbreak'balanced'}, \texttt{max\_iter=5000}) với \texttt{n\_estimators=10}, \texttt{max\_samples=0.8}.
+    \item Vector hóa: TfidfVectorizer với các tham số \texttt{min\_df=2}, \texttt{ngram\_range=\allowbreak(1, 3)}, \texttt{max\_features=\allowbreak None} và \texttt{sublinear\_tf=True}.
+    \item Lọc đặc trưng: SelectKBest ($\chi^2$, \texttt{k='all'}).
+    \item Học tổ hợp: BaggingClassifier sử dụng bộ phân loại cơ sở LinearSVC ($C \approx 1.0873$, \texttt{class\_weight=\allowbreak'balanced'}, \texttt{max\_iter=5000}) với \texttt{n\_estimators=10}, \texttt{max\_samples=0.8}.
 \end{itemize}
 
 \begin{lstlisting}[caption={Cài đặt Pipeline khép kín cho mô hình LinearSVC + Bagging}, label={lst:svm_pipeline}]
@@ -257,10 +272,10 @@ svm_pipeline_complete = Pipeline([
 Pipeline hoàn tất huấn luyện trong 18.17 giây, đạt Accuracy 0.9159 và Macro-F1 0.8547 trên tập kiểm thử.
 
 \subsubsection{Tích hợp siêu dữ liệu (XGBoost with Metadata)}
-Bên cạnh nội dung văn bản thuần túy, bộ dữ liệu cung cấp thông tin ngữ cảnh khách hàng và danh mục sản phẩm. Kiến trúc \texttt{ColumnTransformer} được xây dựng để ghép nối liền mạch ba nguồn đặc trưng:
+Bên cạnh nội dung văn bản thuần túy, bộ dữ liệu cung cấp thông tin ngữ cảnh khách hàng và danh mục sản phẩm. Kiến trúc ColumnTransformer được xây dựng để ghép nối liền mạch ba nguồn đặc trưng:
 \begin{itemize}
     \item Cột văn bản (\texttt{text}): Mã hóa bằng \texttt{TfidfVectorizer(sublinear\_tf=True)} với bộ tham số tối ưu từ bước tuning XGBoost (\texttt{ngram\_range=(1, 2)}, \texttt{min\_df=3}, \texttt{max\_features=10000}).
-    \item Cột phân loại (\texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}): Mã hóa One-Hot bằng \texttt{OneHotEncoder(\allowbreak handle\_unknown='ignore')}.
+    \item Cột phân loại (\texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}): Mã hóa One-Hot bằng \texttt{OneHotEncoder}(\texttt{handle\_unknown=\allowbreak'ignore'}).
     \item Cột số học (\texttt{Age}): Truyền trực tiếp qua \texttt{passthrough}.
 \end{itemize}
 
@@ -281,4 +296,4 @@ xgb_metadata_pipeline = Pipeline([
 ])
 \end{lstlisting}
 
-Mô hình \texttt{XGBoost + metadata} hoàn tất huấn luyện trên GPU trong 11.30 giây và được đưa vào đối chiếu trực tiếp với các mô hình chỉ dùng văn bản ở phần tiếp theo.
+Mô hình XGBoost + metadata hoàn tất huấn luyện trên GPU trong 11.30 giây và được đưa vào đối chiếu trực tiếp với các mô hình chỉ dùng văn bản ở phần tiếp theo.
