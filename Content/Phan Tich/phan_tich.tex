@@ -128,7 +128,7 @@ Quy trình chuẩn bị dữ liệu phục vụ huấn luyện bao gồm các b�
     Tập kiểm thử được giữ độc lập hoàn toàn và chỉ sử dụng cho giai đoạn đánh giá cuối cùng.
     \item Tính toán trọng số bù trừ mất cân bằng lớp: Tính toán tỷ lệ mẫu âm trên mẫu dương trên tập huấn luyện:
     \begin{equation}
-    \text{scale\_pos\_weight} = \frac{\sum (y_{\text{train}} == 0)}{\sum (y_{\text{train}} == 1)} = \frac{3348}{15440} \approx 0.216
+    \text{scale\_pos\_weight} = \frac{\sum (y_{\text{train}} == 0)}{\sum (y_{\text{train}} == 1)} = \frac{3337}{15451} \approx 0.2160
     \end{equation}
     Hệ số này được sử dụng trực tiếp để hiệu chỉnh hàm mất mát trong mô hình XGBoost.
 \end{itemize}

@@ -250,7 +250,7 @@ Kết quả ở Bảng~\ref{tab:ensemble_eval} khẳng định Bagging (LinearSV
 \subsubsection{Xây dựng Pipeline khép kín cho LinearSVC}
 Từ các tham số tối ưu tìm được ở bước tinh chỉnh LinearSVC, nhóm tích hợp thành một Pipeline khép kín (LinearSVC + Bagging Pipeline):
 \begin{itemize}
-    \item Vector hóa: TfidfVectorizer với các tham số \texttt{min\_df=2}, \texttt{ngram\_range=\allowbreak(1, 3)}, \texttt{max\_features=\allowbreak None} và \texttt{sublinear\_tf=True}.
+    \item Vector hóa: TfidfVectorizer với \texttt{min\_df=2}, \texttt{ngram\_range=(1, 3)}, \texttt{max\_features=None} và \texttt{sublinear\_tf=True}.
     \item Lọc đặc trưng: SelectKBest ($\chi^2$, \texttt{k='all'}).
     \item Học tổ hợp: BaggingClassifier sử dụng bộ phân loại cơ sở LinearSVC ($C \approx 1.0873$, \texttt{class\_weight=\allowbreak'balanced'}, \texttt{max\_iter=5000}) với \texttt{n\_estimators=10}, \texttt{max\_samples=0.8}.
 \end{itemize}
@@ -275,7 +275,7 @@ Pipeline hoàn tất huấn luyện trong 18.17 giây, đạt Accuracy 0.9159 v�
 Bên cạnh nội dung văn bản thuần túy, bộ dữ liệu cung cấp thông tin ngữ cảnh khách hàng và danh mục sản phẩm. Kiến trúc ColumnTransformer được xây dựng để ghép nối liền mạch ba nguồn đặc trưng:
 \begin{itemize}
     \item Cột văn bản (\texttt{text}): Mã hóa bằng \texttt{TfidfVectorizer(sublinear\_tf=True)} với bộ tham số tối ưu từ bước tuning XGBoost (\texttt{ngram\_range=(1, 2)}, \texttt{min\_df=3}, \texttt{max\_features=10000}).
-    \item Cột phân loại (\texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}): Mã hóa One-Hot bằng \texttt{OneHotEncoder}(\texttt{handle\_unknown=\allowbreak'ignore'}).
+    \item Cột phân loại (\texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}): Mã hóa One-Hot bằng OneHotEncoder với tùy chọn \texttt{handle\_unknown='ignore'}.
     \item Cột số học (\texttt{Age}): Truyền trực tiếp qua \texttt{passthrough}.
 \end{itemize}
 

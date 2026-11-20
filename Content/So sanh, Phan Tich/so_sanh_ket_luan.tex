@@ -36,9 +36,9 @@ NaiveBayes (baseline) & 0.9040 & 0.9433 & 0.6879 & 0.8156 & 0.5952 & 0.9484 & \t
 
 Từ Bảng~\ref{tab:final_comparison} và Hình~\ref{fig:model_comparison}, nhóm mô hình tuyến tính trên không gian TF-IDF chiếm ưu thế rõ rệt:
 \begin{itemize}
-    \item SVM (tuned) (sử dụng \texttt{LinearSVC} với $n$-gram $(1, 3)$, \texttt{sublinear\_tf=True}, $C \approx 1.0873$) dẫn đầu toàn diện về Accuracy (0.9195), F1 lớp 1 (0.9510), F1 lớp 0 (0.7761), Macro-F1 (0.8635) và ROC-AUC (0.9508) với thời gian huấn luyện 6.19 giây.
+    \item SVM (tuned) (sử dụng LinearSVC với $n$-gram $(1, 3)$, \texttt{sublinear\_tf=True}, $C \approx 1.0873$) dẫn đầu toàn diện về Accuracy (0.9195), F1 lớp 1 (0.9510), F1 lớp 0 (0.7761), Macro-F1 (0.8635) và ROC-AUC (0.9508) với thời gian huấn luyện 6.19 giây.
     \item LinearSVC + Bagging Pipeline xếp thứ hai với Macro-F1 đạt 0.8547 (Accuracy 0.9159), tiếp theo sát nút là SVM-Linear (baseline) (0.8532) và LogReg (tuned) (0.8528, huấn luyện chỉ 2.45 giây). LogReg (baseline) đạt Recall lớp thiểu số cao nhất (0.8599).
-    \item XGBoost đạt hiệu năng cạnh tranh cao sau tinh chỉnh (\texttt{XGBoost (tuned)} đạt Macro-F1 0.8462, \texttt{XGBoost + metadata} đạt 0.8469, Recall lớp 0 đạt 82.6\% $\div$ 82.8\%), nhưng vẫn thấp hơn nhóm mô hình tuyến tính trong khi thời gian huấn luyện dài hơn (11.30 $\div$ 11.48 giây trên GPU).
+    \item XGBoost đạt hiệu năng cạnh tranh cao sau tinh chỉnh (XGBoost tuned đạt Macro-F1 0.8462, XGBoost + metadata đạt 0.8469, Recall lớp 0 đạt 82.6\% $\div$ 82.8\%), nhưng vẫn thấp hơn nhóm mô hình tuyến tính trong khi thời gian huấn luyện dài hơn (11.30 $\div$ 11.48 giây trên GPU).
     \item Multinomial Naive Bayes có tốc độ huấn luyện nhanh nhất (1.84 giây ở bản baseline), tuy nhiên Recall lớp 0 thấp (0.5952 ở baseline và 0.6826 sau tuning) khiến Macro-F1 dừng ở mức 0.8156 $\div$ 0.8262.
 \end{itemize}
 
@@ -70,13 +70,14 @@ LogReg (baseline) & 0.9068 & 0.8510 & \textbf{0.0558} \\ \hline
 
 Bảng~\ref{tab:overfitting_gap} chỉ ra các quy luật quan trọng:
 \begin{itemize}
-    \item \texttt{NaiveBayes (baseline)} có độ chênh lệch lớn nhất (0.1401) do chưa tối ưu hệ số làm trơn $\alpha$; sau khi tinh chỉnh, Gap giảm mạnh còn 0.0642.
-    \item Các mô hình \texttt{LinearSVC} đơn lẻ có điểm tập train rất cao ($0.9859 \div 0.9923$) dẫn đến Gap khoảng $0.1288 \div 0.1327$. Khi kết hợp với \texttt{BaggingClassifier} (\texttt{LinearSVC + Bagging Pipeline}), phương sai được giảm rõ rệt, kéo Gap xuống còn 0.1060.
-    \item Nhóm XGBoost duy trì khoảng cách Train -- Test thấp và ổn định ($0.0758 \div 0.0855$) nhờ kiểm soát độ sâu cây, lấy mẫu con và điều chuẩn lá. \texttt{LogReg (baseline)} đạt độ tổng quát hóa ổn định nhất với Gap chỉ 0.0558.
+    \item NaiveBayes (baseline) có độ chênh lệch lớn nhất (0.1401) do chưa tối ưu hệ số làm trơn $\alpha$; sau khi tinh chỉnh, Gap giảm mạnh còn 0.0642.
+    \item Các mô hình LinearSVC đơn lẻ có điểm tập train rất cao ($0.9859 \div 0.9923$) dẫn đến Gap khoảng $0.1288 \div 0.1327$. Tuy nhiên, hiện tượng này không đồng nghĩa với quá khớp tiêu cực (\textit{harmful overfitting}). Trong không gian từ vựng $n$-gram số chiều lớn, một siêu phẳng tuyến tính có thể dễ dàng phân tách trọn vẹn tập huấn luyện; quan trọng hơn, nhờ nguyên lý Cực tiểu hóa Rủi ro Cấu trúc (\textit{Structural Risk Minimization}) và cơ chế cực đại hóa lề thông qua ràng buộc chuẩn $L_2$ \cite{joachims1998}, LinearSVC duy trì khoảng cách lề an toàn đến các vector hỗ trợ, giúp khả năng tổng quát hóa trên tập kiểm thử độc lập vẫn đạt đỉnh cao nhất toàn bộ thực nghiệm (Test Macro-F1 = 0.8635).
+    \item Khi kết hợp LinearSVC với học tổ hợp Bagging (LinearSVC + Bagging Pipeline), phương sai của mô hình được giảm thiểu rõ rệt \cite{breiman1996}, kéo Gap từ 0.1288 xuống 0.1060 mà vẫn bảo toàn điểm kiểm thử ở mức rất cao (0.8547).
+    \item Nhóm XGBoost duy trì khoảng cách Train -- Test thấp và ổn định ($0.0758 \div 0.0855$) nhờ kiểm soát độ sâu cây, lấy mẫu con và điều chuẩn lá. LogReg (baseline) đạt độ tổng quát hóa ổn định nhất với Gap chỉ 0.0558.
 \end{itemize}
 
 \subsection{Ma trận nhầm lẫn và Báo cáo phân loại}
-Hình~\ref{fig:conf_matrices} trình bày ma trận nhầm lẫn (\textit{Confusion Matrices}) của 4 mô hình đạt Macro-F1 hàng đầu trên tập kiểm thử: \texttt{SVM (tuned)}, \texttt{LinearSVC + Bagging Pipeline}, \texttt{SVM-Linear (baseline)} và \texttt{LogReg (tuned)}.
+Hình~\ref{fig:conf_matrices} trình bày ma trận nhầm lẫn (\textit{Confusion Matrices}) của 4 mô hình đạt Macro-F1 hàng đầu trên tập kiểm thử: SVM (tuned), LinearSVC + Bagging Pipeline, SVM-Linear (baseline) và LogReg (tuned).
 
 \begin{figure}[H]
 \centering
@@ -85,7 +86,15 @@ Hình~\ref{fig:conf_matrices} trình bày ma trận nhầm lẫn (\textit{Confus
 \label{fig:conf_matrices}
 \end{figure}
 
-Báo cáo phân loại chi tiết (\textit{Classification Report}) của mô hình xuất sắc nhất (\texttt{SVM (tuned)}) được tổng hợp trong Bảng~\ref{tab:best_report}.
+Đối chiếu chi tiết giữa 4 ma trận nhầm lẫn trên 4.698 mẫu kiểm thử (gồm 3.863 mẫu Đề xuất và 835 mẫu Không đề xuất) cho thấy:
+\begin{itemize}
+    \item \textbf{SVM (tuned):} Đạt độ cân bằng tối ưu nhất giữa hai loại sai số với tổng số ca phân loại sai thấp nhất toàn bộ thực nghiệm (chỉ 378 mẫu, tương ứng tỷ lệ lỗi toàn cục 8.05\%), gồm 185 ca False Positive (dự đoán nhầm thành Đề xuất) và 193 ca False Negative (bỏ sót đánh giá Đề xuất).
+    \item \textbf{Logistic Regression (tuned):} Thể hiện tính nghiêm ngặt cao trong việc nhận diện lớp không đề xuất khi đạt số ca False Positive thấp nhất (chỉ 168 mẫu), giúp hạn chế tối đa rủi ro gợi ý nhầm sản phẩm kém chất lượng; tuy nhiên, mô hình chấp nhận số ca False Negative cao hơn (254 mẫu).
+    \item \textbf{LinearSVC + Bagging Pipeline:} Nhờ cơ chế biểu quyết đa số từ 10 bộ phân loại cơ sở, mô hình ghi nhận số ca False Negative thấp nhất (chỉ 187 mẫu) và số ca True Positive cao nhất (3.676 mẫu), chứng minh khả năng bao phủ tối đa đối với các khách hàng thực sự hài lòng.
+    \item \textbf{SVM-Linear (baseline):} Duy trì kết quả ổn định với 191 ca False Positive và 217 ca False Negative, tiệm cận rất sát bản tinh chỉnh.
+\end{itemize}
+
+Báo cáo phân loại chi tiết (\textit{Classification Report}) của mô hình xuất sắc nhất (SVM (tuned)) được tổng hợp trong Bảng~\ref{tab:best_report}.
 
 \begin{table}[H]
 \centering
@@ -103,7 +112,7 @@ Rec (Lớp 1)       & 0.95 & 0.95 & 0.95 & 3.863 \\ \hline
 \end{table}
 
 \subsection{Khả năng diễn giải mô hình: Các từ ngữ chi phối quyết định}
-Trích xuất trọng số hồi quy (\textit{Coefficients}) từ mô hình Logistic Regression tối ưu (\texttt{LogReg (tuned)}) để khảo sát khả năng giải thích:
+Trích xuất trọng số hồi quy (\textit{Coefficients}) từ mô hình Logistic Regression tối ưu (LogReg (tuned)) để khảo sát khả năng giải thích:
 \begin{itemize}
     \item Hệ số mang giá trị dương lớn: Thúc đẩy mô hình dự đoán nhãn 1 (\textit{Recommend}).
     \item Hệ số mang giá trị âm lớn: Thúc đẩy mô hình dự đoán nhãn 0 (\textit{Not Recommend}).
@@ -119,7 +128,7 @@ Trích xuất trọng số hồi quy (\textit{Coefficients}) từ mô hình Logi
 Hình~\ref{fig:top_terms} cho thấy các từ thể hiện sự thất vọng về phom dáng, chất lượng hoặc hành vi trả hàng mang trọng số âm mạnh nhất (\textit{huge}, \textit{unflattering}, \textit{returned}, \textit{returning}, \textit{cheap}, \textit{disappointed}, \textit{poorly}, \textit{boxy}), trong khi các từ biểu đạt sự hài lòng mang trọng số dương cao nhất (\textit{love}, \textit{great}, \textit{perfect}, \textit{compliments}, \textit{comfortable}, \textit{flattering}, \textit{soft}).
 
 \subsection{Phân tích lỗi thực tế (Error Analysis)}
-Sử dụng xác suất dự đoán $P(\text{Rec}=1)$ của \texttt{LogReg (tuned)} để khảo sát các trường hợp mô hình tự tin dự đoán nhưng thực tế lại sai:
+Sử dụng xác suất dự đoán $P(\text{Rec}=1)$ của LogReg (tuned) để khảo sát các trường hợp mô hình tự tin dự đoán nhưng thực tế lại sai:
 \begin{enumerate}
     \item False Positives (Thực tế là 0 nhưng mô hình gán 1 với xác suất rất cao, $P(\text{Rec}=1) \in [0.9976, 0.9996]$):
     \begin{itemize}
@@ -133,25 +142,60 @@ Sử dụng xác suất dự đoán $P(\text{Rec}=1)$ của \texttt{LogReg (tune
     \end{itemize}
 \end{enumerate}
 
-\section{Bàn luận và Kết luận}
+\section{Thảo luận}
 
-\subsection{Đánh giá kết quả}
+\subsection{Ưu thế của mô hình tuyến tính trên không gian văn bản thưa}
+Một phát hiện thực nghiệm nổi bật là các mô hình tuyến tính (LinearSVC và Logistic Regression) liên tục vượt trội hơn thuật toán tăng cường cây quyết định phi tuyến (XGBoost) cả về hiệu năng phân loại lẫn thời gian huấn luyện:
+\begin{itemize}
+    \item \textbf{Đặc thù không gian đặc trưng:} Ma trận TF-IDF với dải $n$-gram $(1, 3)$ tạo ra không gian có số chiều cực lớn ($> 10.000$ chiều) nhưng độ thưa rất cao ($> 98\%$ phần tử bằng 0). Về mặt toán học, ranh giới phân tách cảm xúc văn bản phần lớn là sự tích lũy cộng dồn tuyến tính của nhiều từ ngữ mang sắc thái khen/chê.
+    \item \textbf{Cơ chế hoạt động của thuật toán dựa trên cây:} Cây quyết định trong XGBoost phân chia không gian bằng các mặt cắt trực giao theo từng đặc trưng riêng lẻ (\textit{axis-aligned splits}). Để mô tả sự phối hợp giữa hàng chục từ ngữ xuất hiện thưa thớt, cây phải phát triển độ sâu lớn, dẫn đến chi phí tính toán tăng cao trên GPU ($> 11$ giây) và dễ bị nhiễu cục bộ. Ngược lại, LinearSVC và Logistic Regression tìm trực tiếp một siêu phẳng phân tách toàn cục với điều chuẩn $L_2$ chỉ mất từ 2 đến 6 giây, đạt Macro-F1 lên tới 0.8635.
+    \item \textbf{Hạn chế của Naive Bayes:} Dù huấn luyện nhanh nhất (1.84 giây), giả định độc lập có điều kiện của Naive Bayes bỏ qua hoàn toàn cấu trúc liên kết từ, dẫn đến hiện tượng xác suất hậu nghiệm bị đẩy lệch về các giá trị cực đoan ($0$ hoặc $1$), làm giảm tính nhạy cảm với lớp thiểu số.
+\end{itemize}
+
+\subsection{Đánh giá hiệu quả của các giải pháp xử lý mất cân bằng lớp}
+Phân bố nhãn lệch 82.24\% lớp 1 so với 17.76\% lớp 0 là thách thức trung tâm của đề tài:
+\begin{itemize}
+    \item Nếu chỉ tối ưu độ chính xác thông thường (Accuracy), mô hình có thể dễ dàng đạt $> 82\%$ chỉ bằng cách dự đoán toàn bộ là lớp 1, nhưng hoàn toàn thất bại trong việc phát hiện khách hàng phàn nàn (lớp 0).
+    \item Việc áp dụng kỹ thuật học có trọng số chi phí (\textit{Cost-sensitive Learning}) thông qua tham số \texttt{class\_weight} $=$ \texttt{'balanced'} trong LinearSVC/Logistic Regression và \texttt{scale\_pos\_weight} trong XGBoost \cite{he2009} đã nâng Recall lớp 0 từ mức 0.5952 (Naive Bayes baseline) lên tới 0.7844 (SVM tuned), 0.7988 (LogReg tuned) và 0.8599 (LogReg baseline).
+    \item \textbf{Sự đánh đổi (Trade-off) giữa Precision và Recall:} Việc tăng Recall lớp 0 khiến Precision lớp 0 giảm nhẹ (xuống mức $0.77 \div 0.78$). Trong thực tế nghiệp vụ thương mại điện tử, việc chấp nhận gán nhầm một số ít đánh giá tích cực để đổi lại khả năng nhận diện đầy đủ các đánh giá tiêu cực nghiêm trọng là hoàn toàn hợp lý, giúp doanh nghiệp can thiệp kịp thời trước khi đánh mất khách hàng.
+\end{itemize}
+
+\subsection{Vai trò của siêu dữ liệu (Metadata) và sự loại bỏ biến Rating}
+\begin{itemize}
+    \item \textbf{Sự cần thiết của việc loại bỏ Rating:} Kết quả phân tích tại Mục 2.2.3 đã chứng minh điểm số Rating có tương quan gần như tuyệt đối với nhãn đề xuất (rò rỉ mục tiêu). Nếu giữ lại biến này, mô hình sẽ hoàn toàn phụ thuộc vào số sao mà bỏ qua nội dung phản hồi, làm mất đi ý nghĩa của bài toán xử lý ngôn ngữ tự nhiên.
+    \item \textbf{Đóng góp của các thuộc tính bảng phụ trợ:} Khi tích hợp thêm độ tuổi (\texttt{Age}) và danh mục sản phẩm (\texttt{Division}, \texttt{Department}, \texttt{Class}) vào mô hình XGBoost thông qua kiến trúc ColumnTransformer, Macro-F1 chỉ tăng nhẹ từ 0.8462 lên 0.8469 (+0.0007). Điều này chứng minh rằng nội dung cảm xúc ẩn chứa trong câu chữ văn bản đánh giá vẫn là nhân tố quyết định áp đảo hành vi đề xuất của người tiêu dùng, trong khi các thuộc tính nhân khẩu học chỉ đóng vai trò hỗ trợ biên.
+\end{itemize}
+
+\subsection{Giá trị ứng dụng thực tiễn trong thương mại điện tử}
+Kết quả nghiên cứu mang lại giá trị ứng dụng rõ rệt cho các nền tảng thương mại điện tử thời trang:
 \begin{enumerate}
-    \item Xử lý mất cân bằng lớp: Với tỷ lệ 82.24\% lớp 1 và 17.76\% lớp 0, chỉ số Accuracy thông thường ($\sim 90 \div 92\%$) không phản ánh trọn vẹn thách thức. Các kỹ thuật như \texttt{class\_weight='balanced'} trong Logistic Regression/LinearSVC và \texttt{scale\_pos\_weight=0.2160} trong XGBoost đã đẩy Recall lớp thiểu số (Lớp 0) từ mức 59.5\% (ở Naive Bayes baseline) lên đến 78\% $\div$ 86\%, qua đó cải thiện vượt bậc chỉ số Macro-F1 (đạt từ 0.85 đến 0.8635).
-    \item So sánh các thuật toán:
-    \begin{itemize}
-        \item Support Vector Machine (\texttt{LinearSVC}): Kernel Linear chứng minh tính ưu việt trên dữ liệu TF-IDF số chiều lớn. \texttt{SVM (tuned)} đạt hiệu năng cao nhất toàn bộ thực nghiệm (Macro-F1 0.8635, Accuracy 0.9195, ROC-AUC 0.9508). Khi kết hợp thêm \texttt{BaggingClassifier}, \texttt{LinearSVC + Bagging Pipeline} giữ hiệu năng đứng thứ hai (Macro-F1 0.8547) đồng thời giảm rõ rệt phương sai và khoảng cách quá khớp (Gap giảm từ 0.1288 xuống 0.1060).
-        \item Logistic Regression: Đạt hiệu năng rất sát nhóm dẫn đầu (Macro-F1 0.8528 ở bản tuned và 0.8510 ở bản baseline), tốc độ huấn luyện cực nhanh ($\sim 2.5$ giây), độ tổng quát hóa ổn định nhất (Gap 0.0558 ở baseline) và có khả năng diễn giải xuất sắc nhờ vector trọng số hệ số.
-        \item XGBoost: Đạt hiệu năng cạnh tranh cao (Macro-F1 0.8462 $\div$ 0.8469, Recall lớp 0 đạt 82.6\% $\div$ 82.8\%), thuật toán histogram tận dụng GPU CUDA giúp tăng tốc đáng kể. Tuy nhiên, trên không gian đặc trưng TF-IDF dạng thưa, các mô hình tuyến tính (\texttt{LinearSVC} / Logistic Regression) vẫn giữ ưu thế cả về hiệu năng lẫn chi phí tài nguyên.
-        \item Multinomial Naive Bayes: Nhanh nhất (1.84 giây) nhưng giả định độc lập giữa các từ và việc không cân bằng trọng số lớp làm hạn chế Recall lớp thiểu số.
-    \end{itemize}
-    \item Đóng góp của Siêu dữ liệu (Metadata): Việc bổ sung các biến dạng bảng (\texttt{Age}, \texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}) vào XGBoost chỉ làm tăng rất nhẹ Macro-F1 từ 0.8462 lên 0.8469 (+0.0007), chứng tỏ nội dung cảm xúc ẩn chứa trong câu chữ văn bản đánh giá vẫn là yếu tố quyết định hàng đầu.
+    \item \textbf{Hệ thống cảnh báo và chăm sóc khách hàng theo thời gian thực (Real-time CSKH Alert):} Tự động phát hiện các đánh giá tiêu cực nghiêm trọng có xác suất $P(\text{Rec}=0)$ cao để chuyển tiếp ngay cho bộ phận chăm sóc khách hàng xử lý đổi trả hoặc hỗ trợ khiếu nại trước khi ảnh hưởng đến uy tín thương hiệu.
+    \item \textbf{Phân tích phản hồi chất lượng sản phẩm (Quality \& Sizing Feedback):} Từ danh sách các từ ngữ có trọng số âm chi phối mạnh (\textit{huge, boxy, unflattering, cheap, runs small}), hệ thống có thể tự động phân nhóm và cảnh báo cho đội ngũ thiết kế, kiểm soát chất lượng về các lỗi phom dáng hoặc chất liệu vải theo từng nhóm trang phục cụ thể.
 \end{enumerate}
 
-\subsection{Hạn chế và Hướng phát triển}
+\section{Kết luận và Hướng phát triển}
+
+\subsection{Tổng kết kết quả nghiên cứu}
+Đề tài đã hoàn thành toàn diện quy trình giải quyết bài toán phân loại đánh giá sản phẩm thời trang nữ (\textit{Women's E-Commerce Clothing Reviews}) theo đúng chuẩn phương pháp luận học máy:
+\begin{enumerate}
+    \item Khảo sát có hệ thống các kỹ thuật biểu diễn văn bản, chứng minh tính vượt trội của TF-IDF ($n$-gram $(1, 3)$, \texttt{sublinear\_tf=True}) so với CountVectorizer thông thường.
+    \item Triển khai, đối chiếu và phân tích 4 lớp thuật toán học máy đại diện (SVM, Logistic Regression, Multinomial Naive Bayes, XGBoost) trên cùng tập dữ liệu kiểm thử độc lập đã phân tầng 80:20.
+    \item Ứng dụng thành công các kỹ thuật nâng cao gồm lọc đặc trưng đơn biến (Chi-Square, ANOVA), tinh chỉnh siêu tham số ngẫu nhiên tối ưu Macro-F1 (RandomizedSearchCV kết hợp Stratified Cross-Validation), học kết hợp (Bagging, AdaBoost) và kiến trúc tích hợp đa nguồn đặc trưng ColumnTransformer.
+    \item Xác định được cấu hình tối ưu toàn diện: mô hình \textbf{SVM (tuned)} sử dụng LinearSVC đạt hiệu năng dẫn đầu với \textbf{Macro-F1 0.8635}, \textbf{Accuracy 0.9195} và \textbf{ROC-AUC 0.9508}. Mô hình \textbf{LinearSVC + Bagging Pipeline} đạt vị trí thứ hai với Macro-F1 0.8547 và khả năng kiểm soát khoảng cách quá khớp Train -- Test xuất sắc (Gap giảm còn 0.1060).
+\end{enumerate}
+
+\subsection{Hạn chế của nghiên cứu}
 \begin{itemize}
-    \item Hạn chế: Biểu diễn TF-IDF dạng túi từ (Bag-of-Words / $n$-gram) chưa nắm bắt trọn vẹn ngữ cảnh ngữ nghĩa câu dài, quan hệ phủ định phức tạp hoặc lối nói ẩn ý/châm biếm của người mua sắm. Do giới hạn về thời gian huấn luyện trên toàn bộ tập dữ liệu, các kernel phi tuyến của \texttt{SVC} (như RBF, Sigmoid) tốn quá nhiều thời gian và không thể được tinh chỉnh siêu tham số đầy đủ nên nhóm chỉ tập trung triển khai \texttt{LinearSVC}. Ngoài ra, thực nghiệm mới thực hiện trên một lần chia train/test cố định và sử dụng ngưỡng phân loại mặc định.
-    \item Hướng phát triển: Nghiên cứu và đối chiếu với các mô hình học sâu (BiLSTM, CNN 1D) hoặc các mô hình ngôn ngữ lớn tiền huấn luyện (\textit{Pre-trained Transformers} như RoBERTa, DistilBERT) để khai thác sâu hơn sắc thái tình cảm trong ngữ cảnh; kết hợp tối ưu hóa ngưỡng cắt xác suất (\textit{Threshold Tuning}) nhằm nâng cao thêm Recall của lớp không đề xuất.
+    \item Biểu diễn TF-IDF dạng túi từ ($n$-gram) mặc dù hiệu quả và tính toán nhanh nhưng chưa nắm bắt trọn vẹn ngữ cảnh ngữ nghĩa câu dài, quan hệ phụ thuộc cú pháp phức tạp hoặc các sắc thái biểu cảm tinh vi như lối nói mỉa mai, ẩn ý (\textit{sarcasm}).
+    \item Do giới hạn về chi phí tính toán trên toàn bộ 18.788 mẫu huấn luyện, các kernel phi tuyến của thư viện LIBSVM (RBF, Polynomial) có thời gian hội tụ quá dài nên nhóm chưa thể tiến hành tinh chỉnh lưới siêu tham số diện rộng cho các kernel này mà tập trung tối ưu trên LinearSVC (LIBLINEAR).
+    \item Nghiên cứu hiện sử dụng ngưỡng phân loại xác suất mặc định (0.5), chưa tối ưu hóa ngưỡng cắt quyết định (\textit{Threshold Tuning}) riêng biệt cho từng mục tiêu kinh doanh.
+\end{itemize}
+
+\subsection{Hướng phát triển tiếp theo}
+\begin{itemize}
+    \item \textbf{Mô hình học sâu và Transformers tiền huấn luyện:} Nghiên cứu mở rộng sang các kiến trúc Transformer \cite{vaswani2017} như RoBERTa \cite{liu2019roberta} hoặc DistilBERT \cite{sanh2019distilbert} để khai thác tối đa ngữ cảnh hai chiều của văn bản đánh giá.
+    \item \textbf{Tối ưu hóa ngưỡng phân loại (Threshold Tuning):} Tinh chỉnh ngưỡng cắt xác suất dựa trên hàm tổn thất chi phí thực tế giữa False Positive và False Negative nhằm tối đa hóa hơn nữa độ hồi quy của lớp không đề xuất.
+    \item \textbf{Khai phá khía cạnh đánh giá (Aspect-Based Sentiment Analysis - ABSA):} Phát triển mô hình phân loại cảm xúc chi tiết theo từng khía cạnh cụ thể của trang phục (chất liệu vải, kích thước phom dáng, giá cả, thời gian giao hàng).
 \end{itemize}
 
 \begin{thebibliography}{99}
@@ -187,6 +231,15 @@ Breiman, L. (1996). \textit{Bagging Predictors}. Machine Learning, 24(2), 123--1
 
 \bibitem{freund1997}
 Freund, Y., Schapire, R. E. (1997). \textit{A Decision-Theoretic Generalization of On-Line Learning and an Application to Boosting}. Journal of Computer and System Sciences, 55(1), 119--139.
+
+\bibitem{vaswani2017}
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., Polosukhin, I. (2017). \textit{Attention Is All You Need}. In Advances in Neural Information Processing Systems (NeurIPS '17), 30, 5998--6008.
+
+\bibitem{liu2019roberta}
+Liu, Y., Ott, M., Goyal, N., Du, J., Joshi, M., Chen, D., Levy, O., Lewis, M., Zettlemoyer, L., Stoyanov, V. (2019). \textit{RoBERTa: A Robustly Optimized BERT Pretraining Approach}. arXiv preprint arXiv:1907.11692.
+
+\bibitem{sanh2019distilbert}
+Sanh, V., Debut, L., Chaumond, J., Wolf, T. (2019). \textit{DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter}. arXiv preprint arXiv:1910.01108.
 
 \bibitem{kaggle2018}
 Agarap, A. F. (2018). \textit{Statistical Analysis on E-Commerce Reviews, with Sentiment Classification using Bidirectional Recurrent Neural Network (RNN)}. arXiv preprint arXiv:1805.03687.
