@@ -21,8 +21,8 @@ bao gồm 23.486 đánh giá sản phẩm thời trang nữ thực tế từ m�
 \subsection{Các thách thức phương pháp luận}
 Trong quá trình xây dựng bài toán học máy, ba thách thức cốt lõi được xác định:
 \begin{itemize}
-    \item Mất cân bằng lớp nghiêm trọng: Bộ dữ liệu có khoảng 82.24\% mẫu thuộc lớp 1 và chỉ 17.76\% mẫu thuộc lớp 0. Do sự chênh lệch lớn này, thước đo độ chính xác tổng quát (\textit{Accuracy}) không đủ để phản ánh hiệu năng thực tế của mô hình (một mô hình đơn giản luôn dự đoán lớp 1 vẫn đạt độ chính xác hơn 82\%). Vì vậy, nghiên cứu tập trung vào chỉ số Macro-F1, F1-Score và Recall của lớp thiểu số (lớp 0).
-    \item Rò rỉ mục tiêu (Target Leakage): Điểm đánh giá số sao (\texttt{Rating}) có mối liên hệ gần như đồng nhất với nhãn \texttt{Recommended IND}. Nếu sử dụng \texttt{Rating} làm biến đầu vào, bài toán phân loại sẽ trở nên tầm thường và làm mất đi ý nghĩa của việc khai phá văn bản. Do đó, biến \texttt{Rating} hoàn toàn bị loại bỏ khỏi không gian đặc trưng.
+    \item Mất cân bằng lớp nghiêm trọng: Bộ dữ liệu có khoảng 82.24\% mẫu thuộc lớp 1 và chỉ 17.76\% mẫu thuộc lớp 0. Do sự chênh lệch lớn này, thước đo độ chính xác tổng quát (\textit{Accuracy}) không đủ để phản ánh hiệu năng thực tế của mô hình (một mô hình đơn giản luôn dự đoán lớp 1 vẫn đạt độ chính xác hơn 82\%). Vì vậy, nghiên cứu lấy Macro-F1 làm thước đo chính, đồng thời theo dõi F1-Score của từng lớp và Recall của lớp thiểu số (lớp 0).
+    \item Rò rỉ mục tiêu (Target Leakage): Điểm đánh giá số sao (\texttt{Rating}) có mối liên hệ gần như đồng nhất với nhãn \texttt{Recommended IND}. Nếu sử dụng \texttt{Rating} làm biến đầu vào, bài toán phân loại sẽ trở nên tầm thường và làm mất đi ý nghĩa của việc khai phá văn bản. Do đó, biến \texttt{Rating} hoàn toàn bị loại bỏ khỏi không gian đặc trưng (kiểm chứng định lượng tại Mục~\ref{sec:leakage}).
     \item Biểu diễn văn bản phi cấu trúc: Dữ liệu đánh giá là ngôn ngữ tự nhiên không có cấu trúc cố định, đòi hỏi phương pháp trích xuất đặc trưng phù hợp (TF-IDF) nhằm chuyển đổi thành vector số có tính phân biệt cao, đồng thời kiểm soát độ thưa và kích thước không gian từ vựng.
 \end{itemize}
 
@@ -51,6 +51,24 @@ Tập dữ liệu \texttt{Womens Clothing E-Commerce Reviews.csv} gồm 23.486 b
 \label{tab:dataset_desc}
 \end{table}
 
+\subsection{Vai trò của các thuộc tính trong mô hình}
+
+\begin{table}[H]
+\centering
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{3.6cm}|>{\raggedright\arraybackslash}p{4cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Thuộc tính} & \textbf{Vai trò} & \textbf{Lý do} \\ \hline
+\texttt{Title}, \texttt{Review Text} & Đầu vào chính (ghép thành \texttt{text}) & Nguồn tín hiệu ngữ nghĩa duy nhất cho các mô hình cơ sở; tiêu đề ngắn thường chứa từ cảm xúc cô đọng \\ \hline
+\texttt{Age}, \texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name} & Chỉ dùng trong thí nghiệm mở rộng (XGBoost + metadata) & Thông tin ngữ cảnh về khách hàng và sản phẩm; dùng để kiểm tra xem siêu dữ liệu có bổ sung thông tin ngoài văn bản hay không \\ \hline
+\texttt{Rating} & Loại bỏ & Rò rỉ mục tiêu (xem Mục~\ref{sec:leakage}) \\ \hline
+\texttt{Positive Feedback Count} & Loại bỏ & Là số lượt bình chọn xuất hiện sau khi bài đánh giá được đăng, không có sẵn tại thời điểm dự đoán \\ \hline
+\texttt{Clothing ID} & Loại bỏ & Mã định danh sản phẩm, không mang ngữ nghĩa và có số giá trị phân biệt lớn \\ \hline
+\texttt{Recommended IND} & Nhãn mục tiêu & Biến nhị phân cần dự đoán \\ \hline
+\end{tabularx}
+\caption{Vai trò của các thuộc tính trong quá trình xây dựng mô hình}
+\label{tab:feature_roles}
+\end{table}
+
 \subsection{Phân tích khám phá dữ liệu (EDA)}
 
 \subsubsection{Phân tích giá trị khuyết thiếu}
@@ -71,13 +89,17 @@ Các cột còn lại & 0 & 0.00\% & Dữ liệu đầy đủ \\ \hline
 \label{tab:missing_values}
 \end{table}
 
+Các giá trị khuyết được điền thay vì xóa dòng. Cột \texttt{Title} thiếu ở 16.22\% số mẫu và \texttt{Review Text} thiếu ở 3.60\%; nếu xóa các dòng này sẽ làm mất một phần đáng kể dữ liệu, đồng thời có thể làm lệch phân bố nhãn. Vì hai cột được ghép thành một trường \texttt{text}, một mẫu thiếu tiêu đề vẫn còn nội dung chi tiết và ngược lại. Với các cột phân loại, chỉ 14 dòng (0.06\%) bị thiếu và được gom vào một nhãn riêng \texttt{'Unknown'} để mô hình vẫn xử lý được.
+
 \subsubsection{Phân tích phân bố nhãn mục tiêu và độ dài văn bản}
 Phân bố nhãn mục tiêu \texttt{Recommended IND} cho thấy:
 \begin{itemize}
     \item Lớp 1 (Đề xuất): 19.314 mẫu, chiếm 82.24\%.
     \item Lớp 0 (Không đề xuất): 4.172 mẫu, chiếm 17.76\%.
 \end{itemize}
-Độ dài văn bản đánh giá (tính theo số lượng từ của \texttt{Review Text}) có giá trị trung bình là 58.03 từ, độ lệch chuẩn 30.18 từ, trung vị là 57 từ, bách phân vị 90 đạt 98 từ và độ dài tối đa là 115 từ.
+Tỷ lệ giữa lớp đa số và lớp thiểu số xấp xỉ $19.314 / 4.172 \approx 4.63 : 1$. Để thấy rõ tác động của sự mất cân bằng, xét một bộ phân loại tầm thường luôn dự đoán lớp 1: đạt Accuracy 82.24\% và F1 lớp 1 xấp xỉ 0.9025, nhưng F1 lớp 0 bằng 0 nên Macro-F1 chỉ khoảng 0.4513.
+
+Độ dài văn bản đánh giá (tính theo số lượng từ của \texttt{Review Text}) có giá trị trung bình là 58.03 từ, độ lệch chuẩn 30.18 từ, trung vị là 57 từ, bách phân vị 90 đạt 98 từ và độ dài tối đa là 115 từ. Giá trị trung bình (58.03) và trung vị (57) gần nhau, cho thấy phân bố độ dài tương đối cân đối, không có đuôi dài bất thường. Do đánh giá khá ngắn (tối đa 115 từ), không cần cắt hay đệm chuỗi, biểu diễn TF-IDF trên toàn bộ văn bản là phù hợp.
 
 \begin{figure}[H]
 \centering
@@ -87,6 +109,7 @@ Phân bố nhãn mục tiêu \texttt{Recommended IND} cho thấy:
 \end{figure}
 
 \subsubsection{Phân tích rò rỉ mục tiêu giữa Rating và Recommended IND}
+\label{sec:leakage}
 Để kiểm chứng lý do loại bỏ cột \texttt{Rating}, nhóm tiến hành lập bảng kiểm tra chéo tỷ lệ đề xuất theo từng mức điểm đánh giá:
 
 \begin{table}[H]
@@ -107,6 +130,8 @@ Phân bố nhãn mục tiêu \texttt{Recommended IND} cho thấy:
 
 Kết quả ở Bảng~\ref{tab:rating_leakage} khẳng định khách hàng cho 1 và 2 sao hầu như chắc chắn không đề xuất sản phẩm (trên 94\%), trong khi khách hàng cho 4 và 5 sao gần như tuyệt đối đồng ý đề xuất (trên 96\%). Do đó, \texttt{Rating} mang tín hiệu rò rỉ trực tiếp mục tiêu phân loại và phải bị loại bỏ để mô hình học cách phân biệt thông qua ngữ nghĩa văn bản.
 
+Bảng~\ref{tab:rating_leakage} còn cho thấy hai điểm đáng chú ý. Thứ nhất, \texttt{Rating} không trùng khớp tuyệt đối với nhãn: có $168 + 25 = 193$ đánh giá 4--5 sao nhưng không đề xuất và $16 + 94 = 110$ đánh giá 1--2 sao nhưng vẫn đề xuất, tổng cộng 303 mẫu (khoảng 1.29\% dữ liệu). Thứ hai, mức 3 sao (2.871 mẫu, khoảng 12.2\% dữ liệu) là vùng mơ hồ nhất với 41.41\% đề xuất và riêng ba mức 1--3 sao đã chứa $3.979 / 4.172 \approx 95.4\%$ số mẫu thuộc lớp 0. Do đó nếu giữ \texttt{Rating}, một ngưỡng đơn giản (ví dụ từ 4 sao trở lên) đã đủ để dự đoán nhãn với độ chính xác rất cao, bài toán không còn đòi hỏi khai phá văn bản.
+
 \subsubsection{Phân tích các đặc trưng phụ trợ}
 \begin{itemize}
     \item Độ tuổi (\texttt{Age}): Phân bố từ 18 đến 99 tuổi, độ tuổi trung bình là 43.20 tuổi ($\pm 12.28$), tứ phân vị $Q_1 = 34$, trung vị 41, $Q_3 = 52$ tuổi. Nhóm khách hàng chủ yếu thuộc độ tuổi từ 30 đến 55.
@@ -118,17 +143,39 @@ Kết quả ở Bảng~\ref{tab:rating_leakage} khẳng định khách hàng cho
 \subsection{Quy trình tiền xử lý và phân chia dữ liệu}
 Quy trình chuẩn bị dữ liệu phục vụ huấn luyện bao gồm các bước:
 \begin{itemize}
+    \item Lựa chọn biến đầu vào: Các mô hình cơ sở chỉ dùng văn bản \texttt{text}; thí nghiệm mở rộng bổ sung \texttt{Age} và ba biến phân loại. Các cột bị loại và lý do được nêu ở Bảng~\ref{tab:feature_roles}.
     \item Tích hợp nội dung văn bản: Điền giá trị rỗng cho \texttt{Title} và \texttt{Review Text}, sau đó ghép thành một trường văn bản duy nhất \texttt{text} = \texttt{Title} + \texttt{' '} + \texttt{Review Text}. Việc kết hợp này tận dụng tiêu đề ngắn gọn nhưng chứa nhiều từ ngữ cảm xúc cô đọng của người đánh giá.
     \item Xử lý biến phân loại: Điền nhãn \texttt{'Unknown'} cho 14 giá trị khuyết thiếu trong \texttt{Division Name}, \texttt{Department Name} và \texttt{Class Name}.
     \item Phân chia tập huấn luyện và kiểm thử (Train/Test Split): Bộ dữ liệu được chia theo tỷ lệ 80:20 với kỹ thuật lấy mẫu phân tầng (\textit{Stratified Split}) dựa trên nhãn mục tiêu \texttt{Recommended IND} (\texttt{random\_state=42}).
     \begin{itemize}
-        \item Tập huấn luyện (\textit{Train Set}): 18.788 mẫu (chiếm 80.0\%), tỷ lệ lớp 1 là 82.24\%.
-        \item Tập kiểm thử (\textit{Test Set}): 4.698 mẫu (chiếm 20.0\%), tỷ lệ lớp 1 là 82.24\%.
+        \item Tập huấn luyện (\textit{Train Set}): 18.788 mẫu (chiếm 80.0\%), gồm 15.451 mẫu lớp 1 và 3.337 mẫu lớp 0 (tỷ lệ lớp 1 là 82.24\%).
+        \item Tập kiểm thử (\textit{Test Set}): 4.698 mẫu (chiếm 20.0\%), gồm 3.863 mẫu lớp 1 và 835 mẫu lớp 0 (tỷ lệ lớp 1 là 82.24\%).
     \end{itemize}
-    Tập kiểm thử được giữ độc lập hoàn toàn và chỉ sử dụng cho giai đoạn đánh giá cuối cùng.
+    Tập kiểm thử được giữ độc lập và dùng để đánh giá cuối cùng; việc tinh chỉnh siêu tham số được thực hiện bằng kiểm định chéo phân tầng trên tập huấn luyện.
     \item Tính toán trọng số bù trừ mất cân bằng lớp: Tính toán tỷ lệ mẫu âm trên mẫu dương trên tập huấn luyện:
     \begin{equation}
-    \text{scale\_pos\_weight} = \frac{\sum (y_{\text{train}} == 0)}{\sum (y_{\text{train}} == 1)} = \frac{3348}{15440} \approx 0.216
+    \text{scale\_pos\_weight} = \frac{\sum (y_{\text{train}} == 0)}{\sum (y_{\text{train}} == 1)} = \frac{3337}{15451} \approx 0.216
     \end{equation}
-    Hệ số này được sử dụng trực tiếp để hiệu chỉnh hàm mất mát trong mô hình XGBoost.
+    Trong XGBoost, \texttt{scale\_pos\_weight} nhân trọng số cho lớp dương. Vì lớp dương ở đây (nhãn 1) là lớp đa số nên hệ số nhỏ hơn 1 có nghĩa là giảm trọng số của lớp 1, tương đương nâng tầm quan trọng của lớp thiểu số (lớp 0) trong hàm mất mát. Hệ số này được dùng trực tiếp cho mô hình XGBoost.
 \end{itemize}
+
+\subsection{Xử lý văn bản và phòng tránh rò rỉ dữ liệu}
+Văn bản được đưa trực tiếp vào \texttt{TfidfVectorizer} mà không qua các bước làm sạch bổ sung: không loại bỏ stop word và không rút gọn từ (stemming/lemmatization). Theo thiết lập mặc định của scikit-learn, văn bản được chuyển về chữ thường và tách từ bằng biểu thức chính quy giữ lại các token từ hai ký tự trở lên. Nhóm giữ nguyên các từ chức năng vì chúng có thể mang sắc thái phủ định hoặc mức độ (ví dụ \textit{not}, \textit{too}, \textit{very}) và các $n$-gram (bigram, trigram) giúp nắm bắt cụm như \textit{``too small''} hay \textit{``not flattering''}.
+
+Để tránh rò rỉ dữ liệu, mọi bước học tham số từ dữ liệu (xây từ vựng, tính IDF, chọn đặc trưng bằng \texttt{SelectKBest}, mã hóa One-Hot) đều chỉ được khớp (\textit{fit}) trên tập huấn luyện. Khi tinh chỉnh bằng kiểm định chéo, các bước này nằm bên trong \texttt{Pipeline} nên được khớp lại độc lập trên phần huấn luyện của từng fold, còn tập kiểm thử chỉ được biến đổi (\textit{transform}) bằng các tham số đã học.
+
+\subsection{Chiến lược xử lý mất cân bằng lớp}
+Có ba hướng tiếp cận phổ biến: trọng số theo lớp, lấy mẫu lại (oversampling/undersampling) và điều chỉnh ngưỡng quyết định. Báo cáo sử dụng hướng thứ nhất:
+\begin{itemize}
+    \item Logistic Regression và LinearSVC: \texttt{class\_weight='balanced'}, trọng số mỗi lớp tỷ lệ nghịch với tần suất của lớp đó.
+    \item XGBoost: \texttt{scale\_pos\_weight} $\approx 0.216$ như đã trình bày ở trên.
+    \item Multinomial Naive Bayes: bản baseline không dùng cơ chế bù trọng số, nhằm làm mốc so sánh; bản tinh chỉnh khảo sát thêm tham số \texttt{fit\_prior}.
+\end{itemize}
+Nhóm không dùng lấy mẫu lại. Undersampling lớp 1 sẽ bỏ đi phần lớn dữ liệu huấn luyện (chỉ còn khoảng 3.337 mẫu mỗi lớp), còn oversampling lớp 0 trên không gian TF-IDF thưa, nhiều chiều dễ sao chép nguyên văn các bài đánh giá và làm tăng nguy cơ quá khớp. Ngưỡng quyết định giữ mặc định và được nêu là hướng phát triển ở phần kết luận.
+
+\subsection{Giao thức đánh giá}
+Dữ liệu được chia 80:20 một lần, phân tầng theo nhãn, \texttt{random\_state=42}. Việc tinh chỉnh siêu tham số dùng \texttt{RandomizedSearchCV} với \texttt{StratifiedKFold} (có xáo trộn, \texttt{random\_state=42}) trên tập huấn luyện, tối ưu \texttt{f1\_macro}; kết quả cuối cùng của mọi mô hình được báo cáo trên cùng một tập kiểm thử. Một số khảo sát sơ bộ (so sánh tokenization, lựa chọn số đặc trưng $k$, kernel SVM) được chạy trực tiếp trên tập kiểm thử nên chỉ mang tính thăm dò. Các thước đo được tính cho từng lớp:
+\begin{equation}
+\text{Precision} = \frac{TP}{TP + FP}, \qquad \text{Recall} = \frac{TP}{TP + FN}, \qquad F_1 = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+\end{equation}
+và Macro-F1 là trung bình cộng của F1 hai lớp, nên mỗi lớp có trọng số như nhau bất kể số mẫu. Ngoài ra báo cáo dùng Recall của lớp 0 (khả năng phát hiện khách hàng không đề xuất), ROC-AUC (khả năng xếp hạng độc lập với ngưỡng) và thời gian huấn luyện.
