@@ -22,7 +22,7 @@ Do đó, đề tài đặt ra bài toán \textbf{phân loại tự động quy�
     \end{itemize}
 \end{itemize}
 
-Về mặt toán học, bài toán được phát biểu trên tập dữ liệu $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^{N}$ với $N = 23.486$ và nhãn mục tiêu $y_i \in \{0, 1\}$. Mỗi mẫu đầu vào được biểu diễn dưới dạng $x_i = (t_i, m_i)$, trong đó $t_i = \texttt{Title}_i \oplus \texttt{Review Text}_i$ là chuỗi văn bản đánh giá sau khi ghép nối và $m_i$ là vector đặc trưng phụ trợ (\texttt{Age}, \texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}) sử dụng trong thí nghiệm mở rộng. Mục tiêu của quá trình học là tìm hàm phân loại $f_\theta : \mathcal{X} \to \{0, 1\}$ (hoặc hàm ước lượng xác suất $\hat{p}_i = P(y_i = 1 \mid x_i)$) sao cho cực đại hóa chỉ số \textbf{Macro-F1} trên tập kiểm thử độc lập, đồng thời duy trì độ nhạy (\textit{Recall}) cao đối với lớp thiểu số ($y = 0$).
+Mục tiêu cốt lõi của nghiên cứu là xây dựng mô hình phân loại có khả năng tự động nhận diện chính xác quyết định đề xuất của khách hàng từ nội dung bài viết, với trọng tâm là tối ưu hóa chỉ số \textbf{Macro-F1} và nâng cao độ nhạy (\textit{Recall}) đối với nhóm khách hàng không hài lòng (lớp thiểu số).
 
 \subsection{Các thách thức phương pháp luận}
 Trong quá trình xây dựng bài toán học máy, ba thách thức cốt lõi được xác định:
