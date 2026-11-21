@@ -88,9 +88,9 @@ Hình~\ref{fig:conf_matrices} trình bày ma trận nhầm lẫn của 4 mô hì
 
 Đối chiếu chi tiết giữa 4 ma trận nhầm lẫn trên 4.698 mẫu kiểm thử (gồm 3.863 mẫu Đề xuất và 835 mẫu Không đề xuất) cho thấy:
 \begin{itemize}
-    \item \textbf{SVM (tuned):} Đạt độ cân bằng tốt nhất giữa hai loại sai số với tổng số ca phân loại sai thấp nhất (chỉ 378 mẫu, tương ứng tỷ lệ lỗi toàn cục 8.05\%), gồm 185 ca False Positive (dự đoán nhầm thành Đề xuất) và 193 ca False Negative (bỏ sót đánh giá Đề xuất).
-    \item \textbf{Logistic Regression (tuned):} Thể hiện tính nghiêm ngặt cao trong việc nhận diện lớp không đề xuất khi đạt số ca False Positive thấp nhất (chỉ 168 mẫu), giúp hạn chế tối đa rủi ro gợi ý nhầm sản phẩm kém chất lượng; tuy nhiên, mô hình chấp nhận số ca False Negative cao hơn (254 mẫu).
-    \item \textbf{LinearSVC + Bagging Pipeline:} Nhờ cơ chế biểu quyết đa số từ 10 bộ phân loại cơ sở, mô hình ghi nhận số ca False Negative thấp nhất (chỉ 187 mẫu) và số ca True Positive cao nhất (3.676 mẫu), chứng minh khả năng bao phủ tối đa đối với các khách hàng thực sự hài lòng.
+    \item \textbf{SVM (tuned):} Đạt độ cân bằng tốt nhất giữa hai loại sai số với tổng số ca phân loại sai thấp nhất (chỉ 378 mẫu, tương ứng tỷ lệ lỗi toàn cục 8.05\%), gồm 185 ca False Positive và 193 ca False Negative.
+    \item \textbf{Logistic Regression (tuned):} Nhận diện lớp không đề xuất nghiêm ngặt nhất với số ca False Positive thấp nhất (chỉ 168 mẫu), giúp hạn chế rủi ro gợi ý nhầm sản phẩm bị khách hàng chê; tuy nhiên, mô hình có số ca False Negative cao hơn (254 mẫu).
+    \item \textbf{LinearSVC + Bagging Pipeline:} Nhờ cơ chế biểu quyết đa số từ 10 bộ phân loại cơ sở, mô hình ghi nhận số ca False Negative thấp nhất (chỉ 187 mẫu) và số ca True Positive cao nhất (3.676 mẫu), bao phủ tối đa các khách hàng thực sự hài lòng.
     \item \textbf{SVM-Linear baseline:} Duy trì kết quả ổn định với 191 ca False Positive và 217 ca False Negative, tiệm cận rất sát bản tinh chỉnh.
 \end{itemize}
 
@@ -113,12 +113,12 @@ Hình~\ref{fig:top_terms} cho thấy các từ thể hiện sự thất vọng v
 \subsection{Phân tích các trường hợp dự đoán sai}
 Sử dụng xác suất dự đoán $P(\text{Rec}=1)$ của LogReg tuned để khảo sát các trường hợp mô hình tự tin dự đoán nhưng thực tế lại sai:
 \begin{enumerate}
-    \item False Positives (Thực tế là nhãn 0 nhưng mô hình gán nhãn 1 với xác suất rất cao, $P \in [0.9976; 0.9996]$):
+    \item Nhóm False Positive ($P \in [0.9976; 0.9996]$):
     \begin{itemize}
         \item Ví dụ: \textit{``Comfy This shirt is like the best worn in flannel...''} ($P = 0.9996$), \textit{``Love this dress I also have this dress in 3/4 sleeve, tegan tunic...''} ($P = 0.9995$), \textit{``Cute pant Unfortunately i had to size down twice...''} ($P = 0.9976$), hay \textit{``Sale find I bought this in navy and love the multi textures... i would not have paid full price on it. it runs small...''} ($P = 0.9976$).
         \item Nguyên nhân: Bài viết chứa nhiều từ khen tích cực (\textit{comfy}, \textit{love}, \textit{cute}, \textit{soft}) nhưng khách hàng không hài lòng do vấn đề kích cỡ, giá thành hoặc nhãn dữ liệu mâu thuẫn, khiến biểu diễn túi từ TF-IDF đánh giá quá lạc quan.
     \end{itemize}
-    \item False Negatives (Thực tế là nhãn 1 nhưng mô hình gán nhãn 0 với xác suất rất cao, $P \in [0.0008; 0.0071]$):
+    \item Nhóm False Negative ($P \in [0.0008; 0.0071]$):
     \begin{itemize}
         \item Ví dụ: \textit{``Much thinner I was so excited to receive this top but was immediately disappointed! it is much thinner than it seems \& it almost feels like a cheap top...''} ($P = 0.0008$), \textit{``Strange shape ... the fabrics and details are pretty but the shape is really strange...''} ($P = 0.0014$), \textit{``I recommend with caveats I splurged on this top and was sadly disappointed...''} ($P = 0.0071$).
         \item Nguyên nhân: Khách hàng nêu rõ các nhược điểm (vải mỏng, form dáng lạ, chật) nhưng vẫn bấm đề xuất sản phẩm; sự hiện diện của các từ mang trọng số âm mạnh (\textit{disappointed}, \textit{cheap}, \textit{strange}, \textit{tight}) kéo xác suất dự đoán về sát 0.
@@ -128,7 +128,7 @@ Sử dụng xác suất dự đoán $P(\text{Rec}=1)$ của LogReg tuned để k
 \section{Thảo luận}
 
 \subsection{Ưu thế của mô hình tuyến tính trên không gian văn bản thưa}
-Các mô hình tuyến tính (LinearSVC và Logistic Regression) liên tục vượt trội hơn thuật toán tăng cường cây quyết định phi tuyến (XGBoost) cả về hiệu năng phân loại lẫn thời gian huấn luyện:
+Các mô hình tuyến tính như LinearSVC và Logistic Regression vượt trội hơn hẳn thuật toán cây quyết định tăng cường như XGBoost cả về hiệu năng phân loại lẫn thời gian huấn luyện:
 \begin{itemize}
     \item \textbf{Đặc thù không gian đặc trưng:} Ma trận TF-IDF với dải $n$-gram $(1, 3)$ tạo ra không gian có số chiều lớn ($> 10.000$ chiều) nhưng độ thưa rất cao ($> 98\%$ phần tử bằng 0). Về mặt toán học, ranh giới phân tách cảm xúc văn bản phần lớn là sự tích lũy cộng dồn tuyến tính của nhiều từ ngữ mang sắc thái khen hoặc chê.
     \item \textbf{Cơ chế hoạt động của thuật toán dựa trên cây:} Cây quyết định trong XGBoost phân chia không gian bằng các mặt cắt trực giao theo từng đặc trưng riêng lẻ. Để mô tả sự phối hợp giữa hàng chục từ ngữ xuất hiện thưa thớt, cây phải phát triển độ sâu lớn, dẫn đến chi phí tính toán tăng cao trên GPU ($> 11$ giây) và dễ bị nhiễu cục bộ. Ngược lại, LinearSVC và Logistic Regression tìm trực tiếp một siêu phẳng phân tách toàn cục với điều chuẩn $L_2$ chỉ mất từ 2 đến 6 giây, đạt Macro-F1 lên tới 0.8635.
@@ -141,7 +141,7 @@ Phân bố nhãn lệch 82.24\% lớp 1 so với 17.76\% lớp 0 là thách th�
     \item \textbf{Tác động của việc áp dụng trọng số bù trừ lớp ở các mô hình cơ sở:}  
     Mô hình Naive Bayes không có cơ chế bù trừ trọng số mẫu chỉ đạt Recall lớp 0 là 0.5952, đồng nghĩa với việc bỏ sót hơn 40\% lời phàn nàn của khách hàng. Ngược lại, ngay ở các mô hình cơ sở chưa qua tinh chỉnh (baseline), việc kích hoạt \texttt{class\_weight='balanced'} ở LinearSVC và Logistic Regression, cùng \texttt{scale\_pos\_weight} ở XGBoost \cite{he2009} đã lập tức nâng Recall lớp 0 lên mức 0.7713 (LinearSVC), 0.8108 (XGBoost) và 0.8599 (Logistic Regression).
     \item \textbf{Sự biến chuyển sau khi tinh chỉnh siêu tham số:}  
-    Quá trình tinh chỉnh với hàm mục tiêu Macro-F1 giúp các mô hình tìm được điểm cân bằng tối ưu hơn giữa Precision và Recall. Đối với SVM, phiên bản tinh chỉnh nâng Recall lớp 0 từ 0.7713 lên 0.7844 đồng thời tăng độ chính xác phân loại, đưa Macro-F1 lên mức cao nhất toàn thực nghiệm (0.8635). Với Logistic Regression, phiên bản tinh chỉnh chủ động điều chỉnh Recall lớp 0 từ 0.8599 về 0.7988 để tăng Precision, giúp giảm mạnh số ca báo động nhầm (False Positive) từ bản cơ sở.
+    Quá trình tinh chỉnh với hàm mục tiêu Macro-F1 giúp các mô hình tìm được điểm cân bằng tối ưu hơn giữa Precision và Recall. Đối với SVM, phiên bản tinh chỉnh nâng Recall lớp 0 từ 0.7713 lên 0.7844 đồng thời tăng độ chính xác phân loại, đưa Macro-F1 lên mức cao nhất toàn thực nghiệm (0.8635). Với Logistic Regression, phiên bản tinh chỉnh chủ động điều chỉnh Recall lớp 0 từ 0.8599 về 0.7988 để tăng Precision, giúp giảm mạnh số ca báo động nhầm False Positive so với mô hình cơ sở.
     \item \textbf{Sự đánh đổi giữa Precision và Recall:}  
     Việc tăng Recall lớp 0 khiến Precision lớp 0 duy trì ở mức khoảng 0.77 -- 0.78. Trong thực tế nghiệp vụ thương mại điện tử, việc chấp nhận gán nhầm một số ít đánh giá tích cực để đổi lại khả năng nhận diện đầy đủ các đánh giá tiêu cực nghiêm trọng là hoàn toàn hợp lý, giúp doanh nghiệp can thiệp kịp thời trước khi đánh mất khách hàng.
 \end{itemize}
@@ -165,16 +165,16 @@ Kết quả nghiên cứu mang lại giá trị ứng dụng rõ rệt cho các 
 Đề tài đã hoàn thành quy trình xây dựng và đánh giá các mô hình học máy cho bài toán phân loại đánh giá sản phẩm thời trang:
 \begin{enumerate}
     \item Khảo sát có hệ thống các kỹ thuật biểu diễn văn bản, chứng minh tính vượt trội của TF-IDF ($n$-gram $(1, 3)$, \texttt{sublinear\_tf=True}) so với CountVectorizer thông thường.
-    \item Triển khai, đối chiếu và phân tích 4 lớp thuật toán học máy đại diện (SVM, Logistic Regression, Multinomial Naive Bayes, XGBoost) trên cùng tập dữ liệu kiểm thử độc lập đã phân tầng 80:20.
-    \item Ứng dụng thành công các kỹ thuật nâng cao gồm lọc đặc trưng đơn biến (Chi-Square, ANOVA), tinh chỉnh siêu tham số ngẫu nhiên tối ưu Macro-F1 (RandomizedSearchCV kết hợp Stratified Cross-Validation), học kết hợp (Bagging, AdaBoost) và kiến trúc tích hợp đa nguồn đặc trưng ColumnTransformer.
+    \item Triển khai, đối chiếu và phân tích 4 mô hình gồm SVM, Logistic Regression, Multinomial Naive Bayes và XGBoost trên cùng tập dữ liệu kiểm thử độc lập đã phân tầng 80:20.
+    \item Ứng dụng thành công các kỹ thuật nâng cao gồm lọc đặc trưng đơn biến với Chi-Square và ANOVA, tinh chỉnh siêu tham số ngẫu nhiên tối ưu Macro-F1, học kết hợp với Bagging và AdaBoost, cùng kiến trúc tích hợp đa nguồn đặc trưng ColumnTransformer.
     \item Xác định được cấu hình tối ưu toàn diện: mô hình \textbf{SVM (tuned)} sử dụng LinearSVC đạt hiệu năng dẫn đầu với \textbf{Macro-F1 0.8635}, \textbf{Accuracy 0.9195} và \textbf{ROC-AUC 0.9508}. Mô hình \textbf{LinearSVC + Bagging Pipeline} đạt vị trí thứ hai với Macro-F1 0.8547 và khả năng kiểm soát khoảng cách quá khớp Train -- Test tốt (chênh lệch giảm còn 0.1060).
 \end{enumerate}
 
 \subsection{Hạn chế của nghiên cứu}
 \begin{itemize}
     \item Biểu diễn TF-IDF dạng túi từ $n$-gram mặc dù hiệu quả và tính toán nhanh nhưng chưa nắm bắt trọn vẹn ngữ cảnh ngữ nghĩa câu dài, quan hệ phụ thuộc cú pháp phức tạp hoặc các sắc thái biểu cảm tinh vi như lối nói mỉa mai, ẩn ý.
-    \item Do giới hạn về chi phí tính toán trên toàn bộ 18.788 mẫu huấn luyện, các kernel phi tuyến của thư viện LIBSVM (RBF, Polynomial) có thời gian hội tụ quá dài nên nhóm chưa thể tiến hành tinh chỉnh lưới siêu tham số diện rộng cho các kernel này mà tập trung tối ưu trên LinearSVC (LIBLINEAR).
-    \item Nghiên cứu hiện sử dụng ngưỡng phân loại xác suất mặc định (0.5), chưa tối ưu hóa ngưỡng cắt quyết định riêng biệt cho từng mục tiêu kinh doanh.
+    \item Do giới hạn về chi phí tính toán trên toàn bộ 18.788 mẫu huấn luyện, các kernel phi tuyến như RBF hay Polynomial trong thư viện LIBSVM có thời gian hội tụ quá dài nên nhóm chưa thể tiến hành tinh chỉnh lưới siêu tham số diện rộng cho các kernel này mà tập trung tối ưu trên LinearSVC của thư viện LIBLINEAR.
+    \item Nghiên cứu hiện sử dụng ngưỡng phân loại xác suất mặc định 0.5, chưa tối ưu hóa ngưỡng cắt quyết định riêng biệt cho từng mục tiêu kinh doanh.
 \end{itemize}
 
 \subsection{Hướng phát triển tiếp theo}
