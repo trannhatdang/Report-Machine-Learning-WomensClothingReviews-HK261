@@ -22,6 +22,8 @@ Do đó, đề tài đặt ra bài toán \textbf{phân loại tự động quy�
     \end{itemize}
 \end{itemize}
 
+Về mặt toán học, bài toán được phát biểu trên tập dữ liệu $\mathcal{D} = \{(x_i, y_i)\}_{i=1}^{N}$ với $N = 23.486$ và nhãn mục tiêu $y_i \in \{0, 1\}$. Mỗi mẫu đầu vào được biểu diễn dưới dạng $x_i = (t_i, m_i)$, trong đó $t_i = \texttt{Title}_i \oplus \texttt{Review Text}_i$ là chuỗi văn bản đánh giá sau khi ghép nối và $m_i$ là vector đặc trưng phụ trợ (\texttt{Age}, \texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}) sử dụng trong thí nghiệm mở rộng. Mục tiêu của quá trình học là tìm hàm phân loại $f_\theta : \mathcal{X} \to \{0, 1\}$ (hoặc hàm ước lượng xác suất $\hat{p}_i = P(y_i = 1 \mid x_i)$) sao cho cực đại hóa chỉ số \textbf{Macro-F1} trên tập kiểm thử độc lập, đồng thời duy trì độ nhạy (\textit{Recall}) cao đối với lớp thiểu số ($y = 0$).
+
 \subsection{Các thách thức phương pháp luận}
 Trong quá trình xây dựng bài toán học máy, ba thách thức cốt lõi được xác định:
 \begin{itemize}
@@ -29,6 +31,39 @@ Trong quá trình xây dựng bài toán học máy, ba thách thức cốt lõi
     \item \textbf{Rò rỉ mục tiêu (Target Leakage):} Điểm đánh giá số sao (\texttt{Rating}) có mối liên hệ gần như đồng nhất với nhãn \texttt{Recommended IND}. Nếu sử dụng \texttt{Rating} làm biến đầu vào, bài toán phân loại sẽ trở nên tầm thường và làm mất đi ý nghĩa của việc khai phá văn bản. Do đó, biến \texttt{Rating} hoàn toàn bị loại bỏ khỏi không gian đặc trưng.
     \item \textbf{Biểu diễn văn bản phi cấu trúc:} Dữ liệu đánh giá là ngôn ngữ tự nhiên không có cấu trúc cố định, thường chứa các câu pha trộn khen -- chê hoặc phủ định gián tiếp. Điều này đòi hỏi phương pháp trích xuất đặc trưng phù hợp (TF-IDF kết hợp $n$-gram) nhằm chuyển đổi thành vector số có tính phân biệt cao, đồng thời kiểm soát độ thưa và kích thước không gian từ vựng.
 \end{itemize}
+
+\subsection{Cơ sở lựa chọn các họ mô hình}
+Thay vì triển khai các mô hình học sâu nặng tài nguyên, đề tài tập trung vào nhóm thuật toán học máy cổ điển kết hợp biểu diễn TF-IDF nhằm đảm bảo tốc độ huấn luyện nhanh, khả năng diễn giải trực tiếp trọng số từ vựng và tính hiệu quả cao trên bài toán văn bản ngắn. Bốn họ mô hình đại diện cho các trường phái khác nhau được lựa chọn và tóm tắt trong Bảng~\ref{tab:model_rationale}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Họ mô hình} & \textbf{Đặc điểm phương pháp luận} & \textbf{Vai trò trong nghiên cứu} \\ \hline
+\textbf{Support Vector Machine} (\texttt{LinearSVC}) & Tối ưu hóa siêu phẳng phân tách với lề cực đại; đặc biệt hiệu quả trên không gian vector thưa, số chiều cao. & Mô hình tuyến tính chủ lực cho văn bản TF-IDF và mở rộng với Bagging Pipeline. \\ \hline
+\textbf{Logistic Regression} & Mô hình phân biệt tuyến tính theo xác suất, hỗ trợ điều chuẩn $L_2$ và cân bằng trọng số lớp (\texttt{class\_weight}). & Đối trọng tuyến tính nhẹ, dễ diễn giải trọng số từ khóa và tối ưu Recall lớp 0. \\ \hline
+\textbf{Multinomial Naive Bayes} & Mô hình sinh xác suất dựa trên giả thiết độc lập có điều kiện giữa các từ với hệ số làm trơn Laplace $\alpha$. & Mô hình cơ sở (\textit{baseline}) kinh điển cho NLP với tốc độ huấn luyện nhanh nhất. \\ \hline
+\textbf{XGBoost} & Tăng cường độ dốc (\textit{Gradient Boosting}) trên tập cây quyết định, nắm bắt tương tác phi tuyến. & Kiểm chứng năng lực mô hình phi tuyến trên TF-IDF và khả năng tích hợp siêu dữ liệu dạng bảng (\textit{metadata}). \\ \hline
+\end{tabularx}
+\caption{Tóm tắt cơ sở lựa chọn 4 họ mô hình học máy trong nghiên cứu}
+\label{tab:model_rationale}
+\end{table}
+
+\subsection{Thước đo đánh giá hiệu năng}
+Để đánh giá khách quan trong điều kiện dữ liệu mất cân bằng lớp (82.24\% lớp 1 và 17.76\% lớp 0), đề tài không lấy \textit{Accuracy} làm tiêu chí tối ưu chính mà sử dụng bộ thước đo dựa trên ma trận nhầm lẫn (\textit{Confusion Matrix}) cho từng lớp $c \in \{0, 1\}$:
+\begin{equation}
+\text{Precision}_c = \frac{TP_c}{TP_c + FP_c}, \qquad
+\text{Recall}_c = \frac{TP_c}{TP_c + FN_c}, \qquad
+F_{1,c} = \frac{2 \cdot \text{Precision}_c \cdot \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
+\end{equation}
+Trong đó, $TP_c$, $FP_c$ và $FN_c$ lần lượt là số dự đoán đúng dương tính, dương tính giả và âm tính giả đối với lớp $c$. Chỉ số mục tiêu chính dùng để tinh chỉnh siêu tham số và xếp hạng mô hình là \textbf{Macro-F1}:
+\begin{equation}
+\text{Macro-}F_1 = \frac{1}{2}\left(F_{1,0} + F_{1,1}\right)
+\end{equation}
+Do tính trung bình không trọng số giữa hai lớp, $\text{Macro-}F_1$ phạt nặng các mô hình bỏ sót lớp thiểu số (lớp 0). Bên cạnh đó, báo cáo theo dõi thêm \textbf{Recall (Lớp 0)} (đo tỷ lệ phát hiện đúng các đánh giá không đề xuất), \textbf{ROC-AUC} (đánh giá năng lực phân tách tổng quát không phụ thuộc ngưỡng phân loại) và \textbf{Fit Time} (thời gian huấn luyện tính bằng giây nhằm đánh giá chi phí tính toán thực tế).
+
+\paragraph{Bố cục báo cáo.} Phần còn lại của báo cáo được tổ chức như sau: \textbf{Phần 2} trình bày mô tả dữ liệu, phân tích khám phá (EDA) chuyên sâu và quy trình tiền xử lý -- phân chia tập dữ liệu; \textbf{Phần 3} đi sâu vào biểu diễn văn bản TF-IDF, lựa chọn đặc trưng, thiết lập và tinh chỉnh siêu tham số cho 4 họ mô hình cùng các kỹ thuật mở rộng; \textbf{Phần 4} tổng hợp kết quả thực nghiệm, phân tích hiện tượng quá khớp (\textit{Overfitting}), ma trận nhầm lẫn, diễn giải từ khóa quan trọng, phân tích lỗi và rút ra kết luận.
 
 \section{Dữ liệu và tiền xử lý}
 
