@@ -65,6 +65,8 @@
 \usepackage{array}
 \usepackage{tabularx, caption}
 \captionsetup{font={small,it}, position=below}
+\renewcommand{\figurename}{Hình}
+\renewcommand{\tablename}{Bảng}
 \usepackage{multirow}
 \usepackage{multicol}
 \usepackage{rotating}
@@ -129,7 +131,7 @@
 \setcounter{tocdepth}{3}
 \makeatletter
 \newcounter {subsubsubsection}[subsubsection]
-\renewcommand\thesubsubsubsection{\thesubsubsection .\@alph\c@subsubsubsection}
+\renewcommand\thesubsubsubsection{\thesubsubsection .\@arabic\c@subsubsubsection}
 \newcommand\subsubsubsection{\@startsection{subsubsubsection}{4}{\z@}%
                                      {-3.25ex\@plus -1ex \@minus -.2ex}%
                                      {1.5ex \@plus .2ex}%
