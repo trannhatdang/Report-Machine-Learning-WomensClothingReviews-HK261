@@ -14,7 +14,7 @@ Do đó, đề tài đặt ra bài toán \textbf{phân loại tự động quy�
 Đề tài sử dụng bộ dữ liệu \textbf{Women's E-Commerce Clothing Reviews} từ Kaggle, bao gồm 23.486 đánh giá sản phẩm thời trang nữ thực tế từ một nhà bán lẻ.
 \begin{itemize}
     \item \textbf{Dạng bài toán:} Phân loại nhị phân.
-    \item \textbf{Đầu vào:} Văn bản đánh giá của khách hàng, được tạo bằng cách ghép nối tiêu đề đánh giá (\texttt{Title}) và nội dung chi tiết (\texttt{Review Text}). Trong thí nghiệm mở rộng, mô hình tích hợp thêm độ tuổi (\texttt{Age}) và các biến phân loại danh mục sản phẩm.
+    \item \textbf{Đầu vào:} Văn bản đánh giá của khách hàng, được tạo bằng cách ghép nối tiêu đề đánh giá (\texttt{Title}) và nội dung chi tiết (\texttt{Review Text}). Trong thí nghiệm mở rộng, mô hình tích hợp thêm các biến phân loại danh mục sản phẩm (\texttt{Division Name}, \texttt{Department Name}, \texttt{Class Name}), độ tuổi (\texttt{Age}) và các đặc trưng số trích xuất độc lập theo từng dòng (\texttt{log\_pos\_feedback}, \texttt{has\_title}, \texttt{title\_word\_count}, \texttt{review\_word\_count}, \texttt{exclamation\_count}).
     \item \textbf{Đầu ra:} Biến nhị phân \texttt{Recommended IND}, trong đó:
     \begin{itemize}
         \item \textbf{Lớp 1:} Khách hàng đề xuất sản phẩm.
@@ -33,7 +33,7 @@ Trong quá trình xây dựng bài toán học máy, ba thách thức cốt lõi
 \end{itemize}
 
 \subsection{Cơ sở lựa chọn các họ mô hình}
-Thay vì triển khai các mô hình học sâu nặng tài nguyên, đề tài tập trung vào nhóm thuật toán học máy cổ điển kết hợp biểu diễn TF-IDF nhằm đảm bảo tốc độ huấn luyện nhanh, khả năng diễn giải trực tiếp trọng số từ vựng và tính hiệu quả cao trên bài toán văn bản ngắn. Bốn họ mô hình đại diện cho các trường phái khác nhau được lựa chọn và tóm tắt trong Bảng~\ref{tab:model_rationale}.
+Trọng tâm của đề tài là nhóm thuật toán học máy cổ điển kết hợp biểu diễn TF-IDF nhằm đảm bảo tốc độ huấn luyện nhanh, khả năng diễn giải trực tiếp trọng số từ vựng và tính hiệu quả cao trên bài toán văn bản ngắn. Bốn họ mô hình đại diện cho các trường phái khác nhau được lựa chọn và tóm tắt trong Bảng~\ref{tab:model_rationale}; bên cạnh đó, ở phần thí nghiệm mở rộng (Mục~\ref{sec:dl_cnn}), nhóm triển khai thêm một mô hình học sâu gọn nhẹ (\textbf{Keras 1D-CNN}) làm mốc đối chiếu trực tiếp với cách tiếp cận TF-IDF.
 
 \begin{table}[H]
 \centering
@@ -63,7 +63,7 @@ Trong đó, $TP_c$, $FP_c$ và $FN_c$ lần lượt là số dự đoán đúng 
 \end{equation}
 Do tính trung bình không trọng số giữa hai lớp, $\text{Macro-}F_1$ phạt nặng các mô hình bỏ sót lớp thiểu số (lớp 0). Bên cạnh đó, nghiên cứu theo dõi thêm Recall lớp 0 nhằm đo tỷ lệ phát hiện các đánh giá không đề xuất, ROC-AUC để đánh giá năng lực phân tách tổng quát, cùng thời gian huấn luyện (Fit Time) nhằm đối chiếu chi phí tính toán thực tế.
 
-\paragraph{Bố cục báo cáo.} Báo cáo được cấu trúc thành 6 phần: \textbf{Phần 1} giới thiệu bối cảnh, mục tiêu và thách thức; \textbf{Phần 2} mô tả dữ liệu, phân tích khám phá (EDA) và quy trình tiền xử lý; \textbf{Phần 3} trình bày biểu diễn văn bản, lựa chọn đặc trưng và các mô hình học máy; \textbf{Phần 4} tổng hợp kết quả thực nghiệm, phân tích quá khớp, ma trận nhầm lẫn và khảo sát sai số; \textbf{Phần 5} thảo luận chuyên sâu về các phát hiện phương pháp luận và giá trị thực tiễn; và \textbf{Phần 6} tổng kết kết luận cùng hướng nghiên cứu tiếp theo.
+\subsection{Bố cục báo cáo.} Báo cáo được cấu trúc thành 6 phần: \textbf{Phần 1} giới thiệu bối cảnh, mục tiêu và thách thức; \textbf{Phần 2} mô tả dữ liệu, phân tích khám phá (EDA) và quy trình tiền xử lý; \textbf{Phần 3} trình bày biểu diễn văn bản, lựa chọn đặc trưng và các mô hình học máy; \textbf{Phần 4} tổng hợp kết quả thực nghiệm, phân tích quá khớp, ma trận nhầm lẫn và khảo sát sai số; \textbf{Phần 5} thảo luận chuyên sâu về các phát hiện phương pháp luận và giá trị thực tiễn; và \textbf{Phần 6} tổng kết kết luận cùng hướng nghiên cứu tiếp theo.
 
 \section{Dữ liệu và tiền xử lý}
 
@@ -268,6 +268,7 @@ Chi tiết các bước trong quy trình chuẩn bị dữ liệu bao gồm:
     \item \textbf{Loại bỏ biến gây rò rỉ:} Loại bỏ hoàn toàn cột \texttt{Rating} (và cột chỉ số thừa) khỏi không gian đặc trưng đầu vào.
     \item \textbf{Tích hợp nội dung văn bản:} Điền giá trị chuỗi rỗng (\texttt{''}) cho các ô khuyết thiếu của \texttt{Title} và \texttt{Review Text}, sau đó ghép thành một trường văn bản duy nhất \texttt{text = (Title + ' ' + Review Text).strip()}. Việc kết hợp này tận dụng tiêu đề ngắn gọn nhưng chứa nhiều từ ngữ cảm xúc cô đọng của người đánh giá.
     \item \textbf{Xử lý biến phân loại:} Điền nhãn \texttt{'Unknown'} cho 14 giá trị khuyết thiếu trong \texttt{Division Name}, \texttt{Department Name} và \texttt{Class Name} phục vụ thí nghiệm tích hợp siêu dữ liệu.
+    \item \textbf{Kỹ thuật đặc trưng phụ trợ (Tabular Feature Engineering):} Trích xuất thêm 5 đặc trưng số tính độc lập theo từng dòng (không gây rò rỉ dữ liệu) gồm \texttt{has\_title} (chỉ báo có tiêu đề), \texttt{title\_word\_count}, \texttt{review\_word\_count}, \texttt{exclamation\_count} (số dấu chấm than) và \texttt{log\_pos\_feedback} $= \ln(1 + \text{Positive Feedback Count})$, kết hợp cùng \texttt{Age} thành 6 đặc trưng số phục vụ thí nghiệm mở rộng. Đồng thời, 844 dòng khuyết đồng thời cả \texttt{Title} và \texttt{Review Text} được giữ lại nhằm bảo toàn phân bố thực tế của tập kiểm thử thay vì lọc bỏ nhân tạo.
     \item \textbf{Phân chia tập huấn luyện và kiểm thử:} Bộ dữ liệu được chia theo tỷ lệ 80:20 với kỹ thuật lấy mẫu phân tầng dựa trên nhãn mục tiêu \texttt{Recommended IND} (\texttt{random\_state=42}):
     \begin{itemize}
         \item \textbf{Tập huấn luyện:} 18.788 mẫu (80.0\%), gồm 15.451 mẫu lớp 1 (82.24\%) và 3.337 mẫu lớp 0 (17.76\%).
