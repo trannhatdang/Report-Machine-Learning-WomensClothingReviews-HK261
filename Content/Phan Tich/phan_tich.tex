@@ -1,30 +1,69 @@
 \section{Giới thiệu bài toán}
 
 \subsection{Bối cảnh và mục tiêu đề tài}
-Trong thương mại điện tử, các đánh giá sản phẩm (\textit{reviews}) của khách hàng là nguồn dữ liệu phản hồi quan trọng 
-giúp doanh nghiệp nắm bắt thị hiếu, nâng cao chất lượng sản phẩm và tối ưu hóa trải nghiệm mua sắm. 
-Bài toán đặt ra là phân loại tự động thái độ và quyết định của khách hàng dựa trên nội dung bài đánh giá.
+Trong thương mại điện tử, các đánh giá sản phẩm (\textit{reviews}) của khách hàng là nguồn dữ liệu phản hồi quan trọng giúp doanh nghiệp nắm bắt thị hiếu, nâng cao chất lượng sản phẩm và tối ưu hóa trải nghiệm mua sắm. Tuy nhiên, trong nhiều kênh phản hồi thực tế (như bình luận mạng xã hội, tin nhắn chăm sóc khách hàng hoặc nhận xét không kèm điểm sao), doanh nghiệp chỉ thu thập được văn bản thô mà không có tín hiệu đánh giá định lượng đi kèm.
+
+Do đó, đề tài đặt ra bài toán \textbf{phân loại tự động quyết định đề xuất sản phẩm} của khách hàng dựa trên nội dung bài đánh giá văn bản. Cụ thể, nghiên cứu hướng tới ba mục tiêu chính:
+\begin{itemize}
+    \item \textbf{Khám phá và chuẩn hóa dữ liệu:} Phân tích đặc trưng phân bố nhãn, độ dài văn bản, ngữ nghĩa từ vựng và các yếu tố phụ trợ nhằm phát hiện sớm các rủi ro như mất cân bằng lớp và rò rỉ mục tiêu.
+    \item \textbf{Xây dựng và so sánh đa mô hình:} Thiết kế quy trình thực nghiệm thống nhất để đánh giá và tinh chỉnh 4 họ thuật toán học máy phổ biến gồm Support Vector Machine (SVM), Logistic Regression, Multinomial Naive Bayes và XGBoost.
+    \item \textbf{Đánh giá mở rộng và tối ưu lớp thiểu số:} Kiểm chứng tác động của việc kết hợp siêu dữ liệu (\textit{metadata}) và học kết hợp (\textit{Ensemble Learning}), đồng thời ưu tiên khả năng nhận diện nhóm khách hàng không hài lòng (lớp thiểu số) nhằm hỗ trợ cảnh báo sớm chất lượng sản phẩm.
+\end{itemize}
 
 \subsection{Dữ liệu và bài toán học máy}
-Đề tài sử dụng bộ dữ liệu \textbf{Women's E-Commerce Clothing Reviews} từ Kaggle, 
-bao gồm 23.486 đánh giá sản phẩm thời trang nữ thực tế từ một nhà bán lẻ.
+Đề tài sử dụng bộ dữ liệu \textbf{Women's E-Commerce Clothing Reviews} từ Kaggle, bao gồm 23.486 đánh giá sản phẩm thời trang nữ thực tế từ một nhà bán lẻ.
 \begin{itemize}
-    \item Dạng bài toán: Phân loại nhị phân (\textit{Binary Classification}).
-    \item Đầu vào (Input): Văn bản đánh giá của khách hàng, được tạo bằng cách ghép nối tiêu đề đánh giá (\texttt{Title}) và nội dung chi tiết (\texttt{Review Text}). Trong thí nghiệm mở rộng, mô hình tích hợp thêm độ tuổi (\texttt{Age}) và các biến phân loại danh mục sản phẩm.
-    \item Đầu ra (Label): Biến nhị phân \texttt{Recommended IND}, trong đó:
+    \item \textbf{Dạng bài toán:} Phân loại nhị phân (\textit{Binary Classification}).
+    \item \textbf{Đầu vào (Input):} Văn bản đánh giá của khách hàng, được tạo bằng cách ghép nối tiêu đề đánh giá (\texttt{Title}) và nội dung chi tiết (\texttt{Review Text}). Trong thí nghiệm mở rộng, mô hình tích hợp thêm độ tuổi (\texttt{Age}) và các biến phân loại danh mục sản phẩm.
+    \item \textbf{Đầu ra (Label):} Biến nhị phân \texttt{Recommended IND}, trong đó:
     \begin{itemize}
-        \item 1: Khách hàng đề xuất sản phẩm (\textit{Recommended}).
-        \item 0: Khách hàng không đề xuất sản phẩm (\textit{Not Recommended}).
+        \item \textbf{Lớp 1:} Khách hàng đề xuất sản phẩm (\textit{Recommended}).
+        \item \textbf{Lớp 0:} Khách hàng không đề xuất sản phẩm (\textit{Not Recommended}).
     \end{itemize}
 \end{itemize}
+
+Mục tiêu cốt lõi của nghiên cứu là xây dựng mô hình phân loại có khả năng tự động nhận diện chính xác quyết định đề xuất của khách hàng từ nội dung bài viết, với trọng tâm là tối ưu hóa chỉ số \textbf{Macro-F1} và nâng cao độ nhạy (\textit{Recall}) đối với nhóm khách hàng không hài lòng (lớp thiểu số).
 
 \subsection{Các thách thức phương pháp luận}
 Trong quá trình xây dựng bài toán học máy, ba thách thức cốt lõi được xác định:
 \begin{itemize}
-    \item Mất cân bằng lớp nghiêm trọng: Bộ dữ liệu có khoảng 82.24\% mẫu thuộc lớp 1 và chỉ 17.76\% mẫu thuộc lớp 0. Do sự chênh lệch lớn này, thước đo độ chính xác tổng quát (\textit{Accuracy}) không đủ để phản ánh hiệu năng thực tế của mô hình (một mô hình đơn giản luôn dự đoán lớp 1 vẫn đạt độ chính xác hơn 82\%). Vì vậy, nghiên cứu tập trung vào chỉ số Macro-F1, F1-Score và Recall của lớp thiểu số (lớp 0).
-    \item Rò rỉ mục tiêu (Target Leakage): Điểm đánh giá số sao (\texttt{Rating}) có mối liên hệ gần như đồng nhất với nhãn \texttt{Recommended IND}. Nếu sử dụng \texttt{Rating} làm biến đầu vào, bài toán phân loại sẽ trở nên tầm thường và làm mất đi ý nghĩa của việc khai phá văn bản. Do đó, biến \texttt{Rating} hoàn toàn bị loại bỏ khỏi không gian đặc trưng.
-    \item Biểu diễn văn bản phi cấu trúc: Dữ liệu đánh giá là ngôn ngữ tự nhiên không có cấu trúc cố định, đòi hỏi phương pháp trích xuất đặc trưng phù hợp (TF-IDF) nhằm chuyển đổi thành vector số có tính phân biệt cao, đồng thời kiểm soát độ thưa và kích thước không gian từ vựng.
+    \item \textbf{Mất cân bằng lớp nghiêm trọng:} Bộ dữ liệu có khoảng 82.24\% mẫu thuộc lớp 1 và chỉ 17.76\% mẫu thuộc lớp 0. Do sự chênh lệch lớn này, thước đo độ chính xác tổng quát (\textit{Accuracy}) không đủ để phản ánh hiệu năng thực tế của mô hình (một mô hình đơn giản luôn dự đoán lớp 1 vẫn đạt độ chính xác hơn 82\%). Vì vậy, nghiên cứu tập trung vào chỉ số Macro-F1, F1-Score và Recall của lớp thiểu số (lớp 0).
+    \item \textbf{Rò rỉ mục tiêu (Target Leakage):} Điểm đánh giá số sao (\texttt{Rating}) có mối liên hệ gần như đồng nhất với nhãn \texttt{Recommended IND}. Nếu sử dụng \texttt{Rating} làm biến đầu vào, bài toán phân loại sẽ trở nên tầm thường và làm mất đi ý nghĩa của việc khai phá văn bản. Do đó, biến \texttt{Rating} hoàn toàn bị loại bỏ khỏi không gian đặc trưng.
+    \item \textbf{Biểu diễn văn bản phi cấu trúc:} Dữ liệu đánh giá là ngôn ngữ tự nhiên không có cấu trúc cố định, thường chứa các câu pha trộn khen -- chê hoặc phủ định gián tiếp. Điều này đòi hỏi phương pháp trích xuất đặc trưng phù hợp (TF-IDF kết hợp $n$-gram) nhằm chuyển đổi thành vector số có tính phân biệt cao, đồng thời kiểm soát độ thưa và kích thước không gian từ vựng.
 \end{itemize}
+
+\subsection{Cơ sở lựa chọn các họ mô hình}
+Thay vì triển khai các mô hình học sâu nặng tài nguyên, đề tài tập trung vào nhóm thuật toán học máy cổ điển kết hợp biểu diễn TF-IDF nhằm đảm bảo tốc độ huấn luyện nhanh, khả năng diễn giải trực tiếp trọng số từ vựng và tính hiệu quả cao trên bài toán văn bản ngắn. Bốn họ mô hình đại diện cho các trường phái khác nhau được lựa chọn và tóm tắt trong Bảng~\ref{tab:model_rationale}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{|l|X|X|}
+\hline
+\textbf{Họ mô hình} & \textbf{Đặc điểm phương pháp luận} & \textbf{Vai trò trong nghiên cứu} \\ \hline
+\textbf{Support Vector Machine} (\texttt{LinearSVC}) & Tối ưu hóa siêu phẳng phân tách với lề cực đại; đặc biệt hiệu quả trên không gian vector thưa, số chiều cao. & Mô hình tuyến tính chủ lực cho văn bản TF-IDF và mở rộng với Bagging Pipeline. \\ \hline
+\textbf{Logistic Regression} & Mô hình phân biệt tuyến tính theo xác suất, hỗ trợ điều chuẩn $L_2$ và cân bằng trọng số lớp (\texttt{class\_weight}). & Đối trọng tuyến tính nhẹ, dễ diễn giải trọng số từ khóa và tối ưu Recall lớp 0. \\ \hline
+\textbf{Multinomial Naive Bayes} & Mô hình sinh xác suất dựa trên giả thiết độc lập có điều kiện giữa các từ với hệ số làm trơn Laplace $\alpha$. & Mô hình cơ sở (\textit{baseline}) kinh điển cho NLP với tốc độ huấn luyện nhanh nhất. \\ \hline
+\textbf{XGBoost} & Tăng cường độ dốc (\textit{Gradient Boosting}) trên tập cây quyết định, nắm bắt tương tác phi tuyến. & Kiểm chứng năng lực mô hình phi tuyến trên TF-IDF và khả năng tích hợp siêu dữ liệu dạng bảng (\textit{metadata}). \\ \hline
+\end{tabularx}
+\caption{Tóm tắt cơ sở lựa chọn 4 họ mô hình học máy trong nghiên cứu}
+\label{tab:model_rationale}
+\end{table}
+
+\subsection{Thước đo đánh giá hiệu năng}
+Để đánh giá khách quan trong điều kiện dữ liệu mất cân bằng lớp (82.24\% lớp 1 và 17.76\% lớp 0), đề tài không lấy \textit{Accuracy} làm tiêu chí tối ưu chính mà sử dụng bộ thước đo dựa trên ma trận nhầm lẫn (\textit{Confusion Matrix}) cho từng lớp $c \in \{0, 1\}$:
+\begin{equation}
+\text{Precision}_c = \frac{TP_c}{TP_c + FP_c}, \qquad
+\text{Recall}_c = \frac{TP_c}{TP_c + FN_c}, \qquad
+F_{1,c} = \frac{2 \cdot \text{Precision}_c \cdot \text{Recall}_c}{\text{Precision}_c + \text{Recall}_c}
+\end{equation}
+Trong đó, $TP_c$, $FP_c$ và $FN_c$ lần lượt là số dự đoán đúng dương tính, dương tính giả và âm tính giả đối với lớp $c$. Chỉ số mục tiêu chính dùng để tinh chỉnh siêu tham số và xếp hạng mô hình là \textbf{Macro-F1}:
+\begin{equation}
+\text{Macro-}F_1 = \frac{1}{2}\left(F_{1,0} + F_{1,1}\right)
+\end{equation}
+Do tính trung bình không trọng số giữa hai lớp, $\text{Macro-}F_1$ phạt nặng các mô hình bỏ sót lớp thiểu số (lớp 0). Bên cạnh đó, báo cáo theo dõi thêm \textbf{Recall (Lớp 0)} (đo tỷ lệ phát hiện đúng các đánh giá không đề xuất), \textbf{ROC-AUC} (đánh giá năng lực phân tách tổng quát không phụ thuộc ngưỡng phân loại) và \textbf{Fit Time} (thời gian huấn luyện tính bằng giây nhằm đánh giá chi phí tính toán thực tế).
+
+\paragraph{Bố cục báo cáo.} Phần còn lại của báo cáo được tổ chức như sau: \textbf{Phần 2} trình bày mô tả dữ liệu, phân tích khám phá (EDA) chuyên sâu và quy trình tiền xử lý -- phân chia tập dữ liệu; \textbf{Phần 3} đi sâu vào biểu diễn văn bản TF-IDF, lựa chọn đặc trưng, thiết lập và tinh chỉnh siêu tham số cho 4 họ mô hình cùng các kỹ thuật mở rộng; \textbf{Phần 4} tổng hợp kết quả thực nghiệm, phân tích hiện tượng quá khớp (\textit{Overfitting}), ma trận nhầm lẫn, diễn giải từ khóa quan trọng, phân tích lỗi và rút ra kết luận.
 
 \section{Dữ liệu và tiền xử lý}
 
@@ -33,6 +72,7 @@ Tập dữ liệu \texttt{Womens Clothing E-Commerce Reviews.csv} gồm 23.486 b
 
 \begin{table}[H]
 \centering
+\renewcommand{\arraystretch}{1.15}
 \begin{tabularx}{\textwidth}{|l|l|X|}
 \hline
 \textbf{Tên cột} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả ý nghĩa} \\ \hline
@@ -40,7 +80,7 @@ Tập dữ liệu \texttt{Womens Clothing E-Commerce Reviews.csv} gồm 23.486 b
 \texttt{Age} & Số nguyên & Độ tuổi của người đánh giá \\ \hline
 \texttt{Title} & Văn bản & Tiêu đề ngắn gọn của bài đánh giá \\ \hline
 \texttt{Review Text} & Văn bản & Nội dung chi tiết bài viết đánh giá của khách hàng \\ \hline
-\texttt{Rating} & Số nguyên & Điểm đánh giá mức độ hài lòng của khách hàng ($1 \div 5$) \\ \hline
+\texttt{Rating} & Số nguyên & Điểm đánh giá mức độ hài lòng của khách hàng ($1\text{--}5$) \\ \hline
 \texttt{Recommended IND} & Nhị phân & Nhãn mục tiêu: 1 (Đề xuất) hoặc 0 (Không đề xuất) \\ \hline
 \texttt{Positive Feedback Count} & Số nguyên & Số lượng người dùng khác bình chọn tích cực cho bài đánh giá \\ \hline
 \texttt{Division Name} & Phân loại & Phân nhánh cấp cao của dòng sản phẩm thời trang \\ \hline
@@ -53,10 +93,11 @@ Tập dữ liệu \texttt{Womens Clothing E-Commerce Reviews.csv} gồm 23.486 b
 
 \subsection{Phân tích khám phá dữ liệu (EDA)}
 
-\subsubsection{Phân tích giá trị khuyết thiếu}
-Kiểm tra tính toàn vẹn của tập dữ liệu trên toàn bộ 23.486 dòng:
+\subsubsection{Phân tích giá trị khuyết thiếu và trường hợp biên}
+Kiểm tra tính toàn vẹn của tập dữ liệu trên toàn bộ 23.486 dòng được tổng hợp trong Bảng~\ref{tab:missing_values}:
 \begin{table}[H]
 \centering
+\renewcommand{\arraystretch}{1.15}
 \begin{tabular}{|l|c|c|l|}
 \hline
 \textbf{Tên cột} & \textbf{Số lượng khuyết} & \textbf{Tỷ lệ (\%)} & \textbf{Phương án xử lý} \\ \hline
@@ -71,26 +112,45 @@ Các cột còn lại & 0 & 0.00\% & Dữ liệu đầy đủ \\ \hline
 \label{tab:missing_values}
 \end{table}
 
+Đáng chú ý, khi kiểm tra sâu hơn giao giữa hai trường văn bản, có tới \textbf{844 dòng (chiếm 3.59\%)} bị khuyết \textit{đồng thời} cả \texttt{Title} lẫn \texttt{Review Text} (trong tổng số 845 dòng khuyết \texttt{Review Text}, chỉ có duy nhất 1 dòng còn giữ lại tiêu đề). Sau khi ghép chuỗi, 844 bản ghi này trở thành chuỗi rỗng hoàn toàn (\texttt{""}), trong đó có \textbf{773 mẫu thuộc lớp 1 (91.59\%)} và \textbf{71 mẫu thuộc lớp 0 (8.41\%)}. Đối với các mô hình thuần văn bản, nhóm mẫu rỗng này tạo thành vector không và buộc mô hình phải dự đoán dựa trên thiên lệch tiên nghiệm (\textit{prior/bias}), góp phần giải thích một phần sai số không thể khử (\textit{irreducible error}) ở giai đoạn đánh giá.
+
 \subsubsection{Phân tích phân bố nhãn mục tiêu và độ dài văn bản}
-Phân bố nhãn mục tiêu \texttt{Recommended IND} cho thấy:
+Phân bố nhãn mục tiêu \texttt{Recommended IND} thể hiện sự mất cân bằng rõ rệt (tỷ lệ xấp xỉ $4.63 : 1$):
 \begin{itemize}
-    \item Lớp 1 (Đề xuất): 19.314 mẫu, chiếm 82.24\%.
-    \item Lớp 0 (Không đề xuất): 4.172 mẫu, chiếm 17.76\%.
+    \item \textbf{Lớp 1 (Đề xuất):} 19.314 mẫu, chiếm 82.24\%.
+    \item \textbf{Lớp 0 (Không đề xuất):} 4.172 mẫu, chiếm 17.76\%.
 \end{itemize}
-Độ dài văn bản đánh giá (tính theo số lượng từ của \texttt{Review Text}) có giá trị trung bình là 58.03 từ, độ lệch chuẩn 30.18 từ, trung vị là 57 từ, bách phân vị 90 đạt 98 từ và độ dài tối đa là 115 từ.
+Xét trên toàn tập dữ liệu, độ dài văn bản đánh giá (tính theo số từ của \texttt{Review Text}) có giá trị trung bình 58.03 từ, độ lệch chuẩn 30.18 từ, trung vị 57 từ, bách phân vị 90 đạt 98 từ và độ dài tối đa là 115 từ (Hình~\ref{fig:eda_dist}).
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{figures/logreg_xgb_cell12_1.png}
-\caption{Phân bố nhãn Recommended IND và Biểu đồ tần số độ dài đánh giá}
+\includegraphics[width=0.88\textwidth]{figures/logreg_xgb_cell12_1.png}
+\caption{Phân bố nhãn Recommended IND và biểu đồ tần số độ dài đánh giá}
 \label{fig:eda_dist}
 \end{figure}
 
+Để kiểm tra liệu độ dài bài viết có mang tín hiệu phân biệt thái độ khách hàng hay không, Hình~\ref{fig:eda_wordcount_by_class} so sánh phân bố số từ giữa hai lớp trên nhóm các đánh giá có nội dung (\texttt{word\_count > 0}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/eda_wordcount_by_class.png}
+\caption{So sánh phân bố độ dài Review Text giữa lớp 0 và lớp 1 (KDE và Boxplot)}
+\label{fig:eda_wordcount_by_class}
+\end{figure}
+
+Kết quả cho thấy:
+\begin{itemize}
+    \item \textbf{Khách hàng không đề xuất có xu hướng viết dài hơn nhẹ:} Trên các bài đánh giá có nội dung, lớp 0 đạt trung bình \textbf{62.00 từ} (trung vị 61 từ, $\sigma = 27.01$), cao hơn so với lớp 1 với trung bình \textbf{59.80 từ} (trung vị 58 từ, $\sigma = 28.85$). Nếu tính cả các dòng rỗng, mức chênh lệch là 60.95 từ (lớp 0) so với 57.40 từ (lớp 1). Điều này phản ánh tâm lý thực tế: khách hàng không hài lòng thường mô tả chi tiết hơn các vấn đề về kích cỡ, chất vải hoặc lý do trả hàng.
+    \item \textbf{Cấu trúc hai đỉnh (bimodal):} Cả hai đường KDE đều có một đỉnh rõ rệt quanh ngưỡng 95--100 từ, nhiều khả năng bắt nguồn từ giới hạn số ký tự tối đa (khoảng 500 ký tự) của ô nhập đánh giá trên nền tảng thương mại điện tử gốc.
+    \item \textbf{Mức độ chồng lấn cao:} Hai phân bố gần như trùng phủ trên toàn miền giá trị, chứng tỏ riêng độ dài văn bản không đủ để tách biệt hai lớp mà cần khai thác sâu ngữ nghĩa từ vựng.
+\end{itemize}
+
 \subsubsection{Phân tích rò rỉ mục tiêu giữa Rating và Recommended IND}
-Để kiểm chứng lý do loại bỏ cột \texttt{Rating}, nhóm tiến hành lập bảng kiểm tra chéo tỷ lệ đề xuất theo từng mức điểm đánh giá:
+Để kiểm chứng lý do loại bỏ cột \texttt{Rating}, nhóm tiến hành lập bảng kiểm tra chéo tỷ lệ đề xuất theo từng mức điểm đánh giá (Bảng~\ref{tab:rating_leakage}):
 
 \begin{table}[H]
 \centering
+\renewcommand{\arraystretch}{1.15}
 \begin{tabular}{|c|c|c|c|c|}
 \hline
 \textbf{Rating} & \textbf{Tổng số mẫu} & \textbf{Lớp 0 (Không đề xuất)} & \textbf{Lớp 1 (Có đề xuất)} & \textbf{Tỷ lệ lớp 1 (\%)} \\ \hline
@@ -105,30 +165,118 @@ Phân bố nhãn mục tiêu \texttt{Recommended IND} cho thấy:
 \label{tab:rating_leakage}
 \end{table}
 
-Kết quả ở Bảng~\ref{tab:rating_leakage} khẳng định khách hàng cho 1 và 2 sao hầu như chắc chắn không đề xuất sản phẩm (trên 94\%), trong khi khách hàng cho 4 và 5 sao gần như tuyệt đối đồng ý đề xuất (trên 96\%). Do đó, \texttt{Rating} mang tín hiệu rò rỉ trực tiếp mục tiêu phân loại và phải bị loại bỏ để mô hình học cách phân biệt thông qua ngữ nghĩa văn bản.
+Kết quả ở Bảng~\ref{tab:rating_leakage} khẳng định khách hàng cho 1 và 2 sao hầu như chắc chắn không đề xuất sản phẩm (trên 94\%), trong khi khách hàng cho 4 và 5 sao gần như tuyệt đối đồng ý đề xuất (trên 96\%). Chỉ riêng mức 3 sao (2.871 mẫu, chiếm 12.22\% tập dữ liệu) mới có sự phân tách gần cân bằng (41.41\% lớp 1 và 58.59\% lớp 0). Do đó, \texttt{Rating} mang tín hiệu rò rỉ trực tiếp mục tiêu phân loại và phải bị loại bỏ để mô hình học cách phân biệt thông qua ngữ nghĩa văn bản.
 
-\subsubsection{Phân tích các đặc trưng phụ trợ}
+\subsubsection{Phân tích hai biến giữa các đặc trưng phụ trợ và nhãn mục tiêu}
+Thống kê mô tả các đặc trưng phụ trợ (\textit{metadata}) trên toàn tập dữ liệu:
 \begin{itemize}
-    \item Độ tuổi (\texttt{Age}): Phân bố từ 18 đến 99 tuổi, độ tuổi trung bình là 43.20 tuổi ($\pm 12.28$), tứ phân vị $Q_1 = 34$, trung vị 41, $Q_3 = 52$ tuổi. Nhóm khách hàng chủ yếu thuộc độ tuổi từ 30 đến 55.
-    \item Phân nhánh (\texttt{Division Name}): Gồm 3 nhóm chính: General (58.97\%), General Petite (34.57\%) và Initmates (6.40\%).
-    \item Bộ phận (\texttt{Department Name}): Gồm 6 nhóm chính: Tops (44.57\%), Dresses (26.91\%), Bottoms (16.18\%), Intimate (7.39\%), Jackets (4.39\%) và Trend (0.51\%).
-    \item Phân loại trang phục (\texttt{Class Name}): Gồm 20 lớp cụ thể, chiếm tỷ trọng cao nhất là Dresses (26.91\%), Knits (20.62\%), Blouses (13.19\%), Sweaters (6.08\%) và Pants (5.91\%).
+    \item \textbf{Độ tuổi (\texttt{Age}):} Phân bố từ 18 đến 99 tuổi, trung bình 43.20 tuổi ($\pm 12.28$), tứ phân vị $Q_1 = 34$, trung vị 41, $Q_3 = 52$ tuổi; tập trung chủ yếu trong nhóm 30--55 tuổi.
+    \item \textbf{Phân nhánh (\texttt{Division Name}):} Gồm 3 nhóm chính là \texttt{General} (58.97\%), \texttt{General Petite} (34.57\%) và \texttt{Initmates} (6.40\%, giữ nguyên cách viết gốc trong dữ liệu Kaggle).
+    \item \textbf{Bộ phận (\texttt{Department Name}):} Gồm 6 nhóm: \texttt{Tops} (44.57\%), \texttt{Dresses} (26.91\%), \texttt{Bottoms} (16.18\%), \texttt{Intimate} (7.39\%), \texttt{Jackets} (4.39\%) và \texttt{Trend} (0.51\%).
+    \item \textbf{Phân loại trang phục (\texttt{Class Name}):} Gồm 20 lớp cụ thể, chiếm tỷ trọng cao nhất là \texttt{Dresses} (26.91\%), \texttt{Knits} (20.62\%), \texttt{Blouses} (13.19\%), \texttt{Sweaters} (6.08\%) và \texttt{Pants} (5.91\%).
 \end{itemize}
 
-\subsection{Quy trình tiền xử lý và phân chia dữ liệu}
-Quy trình chuẩn bị dữ liệu phục vụ huấn luyện bao gồm các bước:
+Để đánh giá khả năng đóng góp của siêu dữ liệu vào bài toán phân loại, Hình~\ref{fig:eda_metadata_vs_target} trực quan hóa mối liên hệ giữa \texttt{Department Name} và \texttt{Age} với nhãn \texttt{Recommended IND}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/eda_metadata_vs_target.png}
+\caption{Tỷ lệ đề xuất theo bộ phận sản phẩm (trái) và phân bố độ tuổi theo nhãn mục tiêu (phải)}
+\label{fig:eda_metadata_vs_target}
+\end{figure}
+
+Hai phát hiện quan trọng được rút ra từ Hình~\ref{fig:eda_metadata_vs_target}:
 \begin{itemize}
-    \item Tích hợp nội dung văn bản: Điền giá trị rỗng cho \texttt{Title} và \texttt{Review Text}, sau đó ghép thành một trường văn bản duy nhất \texttt{text} = \texttt{Title} + \texttt{' '} + \texttt{Review Text}. Việc kết hợp này tận dụng tiêu đề ngắn gọn nhưng chứa nhiều từ ngữ cảm xúc cô đọng của người đánh giá.
-    \item Xử lý biến phân loại: Điền nhãn \texttt{'Unknown'} cho 14 giá trị khuyết thiếu trong \texttt{Division Name}, \texttt{Department Name} và \texttt{Class Name}.
-    \item Phân chia tập huấn luyện và kiểm thử (Train/Test Split): Bộ dữ liệu được chia theo tỷ lệ 80:20 với kỹ thuật lấy mẫu phân tầng (\textit{Stratified Split}) dựa trên nhãn mục tiêu \texttt{Recommended IND} (\texttt{random\_state=42}).
+    \item \textbf{Biên độ chênh lệch theo \texttt{Department Name} khá hẹp:} Các nhóm sản phẩm chủ lực có tỷ lệ đề xuất bám sát mức trung bình toàn tập (82.24\%), dao động từ 80.8\% (\texttt{Dresses}) và 81.5\% (\texttt{Tops}) đến 83.6\% (\texttt{Jackets}), 85.0\% (\texttt{Intimate}) và 85.1\% (\texttt{Bottoms}). Duy nhất nhóm \texttt{Trend} có tỷ lệ đề xuất thấp hơn đáng kể (73.9\%), nhưng quy mô mẫu rất nhỏ ($n = 119$, chỉ chiếm 0.51\%).
+    \item \textbf{Phân bố \texttt{Age} gần như đồng nhất giữa hai lớp:} Đường mật độ độ tuổi của lớp 0 (trung bình 42.39 $\pm$ 11.78, trung vị 40) và lớp 1 (trung bình 43.37 $\pm$ 12.38, trung vị 41) chồng lấn gần như hoàn toàn. Điều này dự báo rằng các đặc trưng phụ trợ chỉ mang tín hiệu phân biệt yếu, và nội dung văn bản mới là nguồn thông tin quyết định cho mô hình học máy.
+\end{itemize}
+
+\subsubsection{Phân tích nội dung văn bản (Bigrams) và mẫu đánh giá điển hình}
+Nhằm khảo sát trực tiếp tín hiệu ngôn ngữ trong văn bản ghép \texttt{Title + Review Text}, nhóm trích xuất 12 cụm hai từ (\textit{bigrams}, đã loại từ dừng tiếng Anh) có tần suất cao nhất trên từng lớp (Hình~\ref{fig:eda_top_bigrams}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/eda_top_bigrams.png}
+\caption{Top 12 cụm hai từ (Bigrams) phổ biến nhất ở lớp 0 và lớp 1}
+\label{fig:eda_top_bigrams}
+\end{figure}
+
+Hình~\ref{fig:eda_top_bigrams} cho thấy sự phân hóa ngữ nghĩa rõ rệt nhưng đồng thời bộc lộ độ khó tinh tế của ngôn ngữ đánh giá thời trang:
+\begin{itemize}
+    \item \textbf{Lớp 1 (Có đề xuất):} Được chi phối bởi các cụm từ khẳng định độ vừa vặn và sự hài lòng trực tiếp như \texttt{true size} (1.266 lần), \texttt{love dress} (843), \texttt{love love} (683), \texttt{looks great} (584), \texttt{fit perfectly} (558), \texttt{fits perfectly} (489), \texttt{super cute} (477) và \texttt{just right} (415).
+    \item \textbf{Lớp 0 (Không đề xuất):} Nổi bật với các cụm từ diễn tả \textit{kỳ vọng không đạt được} và phàn nàn về chất lượng/kích cỡ như \texttt{wanted love} (333 lần), \texttt{really wanted} (167), \texttt{looked like} (198), \texttt{didn work} (132), \texttt{runs small} (116) và \texttt{poor quality} (105).
+    \item \textbf{Sự xuất hiện chéo của từ tích cực:} Đáng lưu ý là một số cụm từ mang sắc thái tích cực như \texttt{love dress} (104 lần) hay \texttt{true size} (106 lần) vẫn lọt vào nhóm đầu của lớp 0 (thường nằm trong cấu trúc phủ định hoặc tương phản như \textit{``wanted to love this dress, but...''} hoặc \textit{``not true to size''}). Đây là cơ sở thực nghiệm trực tiếp chứng minh việc sử dụng $n$-gram bậc cao ($n = 2, 3$) trong TF-IDF là cần thiết để nắm bắt ngữ cảnh cụm từ.
+\end{itemize}
+
+Để minh họa trực quan độ khó này, Bảng~\ref{tab:sample_reviews} trích dẫn 4 mẫu đánh giá tiêu biểu từ tập dữ liệu gốc, bao gồm hai mẫu cực trị rõ ràng (5 sao, 1 sao) và hai mẫu trung tính 3 sao mang sắc thái pha trộn.
+
+\begin{table}[H]
+\centering
+\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{|c|c|l|l|X|}
+\hline
+\textbf{Rating} & \textbf{Nhãn} & \textbf{Bộ phận} & \textbf{Title} & \textbf{Review Text (trích nguyên văn)} \\ \hline
+5 & 1 & Bottoms & My favorite buy! & \textit{I love, love, love this jumpsuit. it's fun, flirty, and fabulous! every time i wear it, i get nothing but great compliments!} \\ \hline
+1 & 0 & Tops & Huge & \textit{I was very excited to order this top in red xs. so cute, but it was huge, shapeless and support thin! it had to go back. i should've looked at other reviews.} \\ \hline
+3 & 1 & Jackets & Stylish jacket & \textit{I love the pattern on this jacket and enjoy the bell shape. a fun jacket to through on and add quick style to a skinny pants.} \\ \hline
+3 & 0 & Tops & Boring front, great back & \textit{This tank fit well and i loved the ruffle in the back and how it layed. but the front was not a good look and i will be retuning it.} \\ \hline
+\end{tabularx}
+\caption{Một số mẫu đánh giá điển hình trong tập dữ liệu (bao gồm các mẫu 3 sao có sắc thái pha trộn)}
+\label{tab:sample_reviews}
+\end{table}
+
+Qua Bảng~\ref{tab:sample_reviews}, ngay cả đánh giá 1 sao hay 3 sao thuộc lớp 0 vẫn thường mở đầu bằng những từ khen (\textit{``so cute''}, \textit{``fit well''}, \textit{``loved the ruffle''}) trước khi đảo chiều bằng liên từ \textit{``but''} và kết luận trả hàng (\textit{``had to go back''}, \textit{``will be retuning it''} -- thậm chí có lỗi chính tả tự nhiên của người dùng).
+
+\begin{Qbox}{Tóm tắt các phát hiện chính từ EDA định hướng thiết kế mô hình}
+\begin{enumerate}
+    \item \textbf{Đánh giá bằng Macro-F1 và Recall lớp 0:} Do mất cân bằng lớp $4.63:1$ (82.24\% vs. 17.76\%), cần áp dụng trọng số lớp (\texttt{class\_weight} / \texttt{scale\_pos\_weight}) và đánh giá chủ yếu trên Macro-F1.
+    \item \textbf{Loại bỏ tuyệt đối \texttt{Rating}:} Tránh rò rỉ mục tiêu vì \texttt{Rating} quyết định trên 94\%--99\% nhãn ở các mức 1, 2, 4, 5 sao.
+    \item \textbf{Ưu tiên văn bản kết hợp $n$-gram:} Nội dung đánh giá chứa nhiều cấu trúc kỳ vọng -- tương phản (\textit{``wanted love''}, \textit{``didn work''}, \textit{``but...''}); đồng thời \texttt{Age} và \texttt{Department Name} có sức phân biệt yếu.
+    \item \textbf{Lưu ý nhóm 844 mẫu rỗng (3.59\%):} Khuyết đồng thời \texttt{Title} và \texttt{Review Text}, tạo giới hạn tự nhiên đối với độ chính xác của các mô hình thuần văn bản.
+\end{enumerate}
+\end{Qbox}
+
+\subsection{Quy trình tiền xử lý và phân chia dữ liệu}
+Toàn bộ luồng chuẩn bị dữ liệu trước khi đưa vào huấn luyện các mô hình được minh họa khái quát ở Hình~\ref{fig:preprocessing_pipeline}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.45cm,
+    box/.style={rectangle, rounded corners=4pt, draw=black!75, fill=blue!6, thick,
+                text width=2.75cm, align=center, minimum height=1.35cm, font=\footnotesize},
+    arrow/.style={->, >=stealth, thick, draw=black!80}
+]
+\node[box, fill=gray!12] (raw) at (0,0) {\textbf{Dữ liệu gốc}\\23.486 mẫu\\10 thuộc tính};
+\node[box, fill=orange!10] (clean) at (3.45,0) {\textbf{Làm sạch}\\Bỏ \texttt{Rating}\\Điền \texttt{''} \& \texttt{'Unknown'}};
+\node[box, fill=green!10] (concat) at (6.9,0) {\textbf{Ghép văn bản}\\\texttt{text = Title +}\\ \texttt{' ' + Review Text}};
+\node[box, fill=blue!10] (split) at (10.35,0) {\textbf{Stratified 80:20}\\Train: 18.788\\Test: 4.698};
+\node[box, fill=purple!10] (feat) at (13.8,0) {\textbf{Đặc trưng hóa}\\TF-IDF ($n$-gram)\\+ Metadata (mở rộng)};
+
+\draw[arrow] (raw) -- (clean);
+\draw[arrow] (clean) -- (concat);
+\draw[arrow] (concat) -- (split);
+\draw[arrow] (split) -- (feat);
+\end{tikzpicture}
+\caption{Sơ đồ quy trình tiền xử lý và phân chia dữ liệu trước khi huấn luyện mô hình}
+\label{fig:preprocessing_pipeline}
+\end{figure}
+
+Chi tiết các bước trong quy trình chuẩn bị dữ liệu bao gồm:
+\begin{itemize}
+    \item \textbf{Loại bỏ biến gây rò rỉ:} Loại bỏ hoàn toàn cột \texttt{Rating} (và cột chỉ số thừa) khỏi không gian đặc trưng đầu vào.
+    \item \textbf{Tích hợp nội dung văn bản:} Điền giá trị chuỗi rỗng (\texttt{''}) cho các ô khuyết thiếu của \texttt{Title} và \texttt{Review Text}, sau đó ghép thành một trường văn bản duy nhất \texttt{text = (Title + ' ' + Review Text).strip()}. Việc kết hợp này tận dụng tiêu đề ngắn gọn nhưng chứa nhiều từ ngữ cảm xúc cô đọng của người đánh giá.
+    \item \textbf{Xử lý biến phân loại:} Điền nhãn \texttt{'Unknown'} cho 14 giá trị khuyết thiếu trong \texttt{Division Name}, \texttt{Department Name} và \texttt{Class Name} phục vụ thí nghiệm tích hợp siêu dữ liệu.
+    \item \textbf{Phân chia tập huấn luyện và kiểm thử (Train/Test Split):} Bộ dữ liệu được chia theo tỷ lệ 80:20 với kỹ thuật lấy mẫu phân tầng (\textit{Stratified Split}) dựa trên nhãn mục tiêu \texttt{Recommended IND} (\texttt{random\_state=42}):
     \begin{itemize}
-        \item Tập huấn luyện (\textit{Train Set}): 18.788 mẫu (chiếm 80.0\%), tỷ lệ lớp 1 là 82.24\%.
-        \item Tập kiểm thử (\textit{Test Set}): 4.698 mẫu (chiếm 20.0\%), tỷ lệ lớp 1 là 82.24\%.
+        \item \textbf{Tập huấn luyện (\textit{Train Set}):} 18.788 mẫu (80.0\%), gồm 15.451 mẫu lớp 1 (82.24\%) và 3.337 mẫu lớp 0 (17.76\%).
+        \item \textbf{Tập kiểm thử (\textit{Test Set}):} 4.698 mẫu (20.0\%), gồm 3.863 mẫu lớp 1 (82.23\%) và 835 mẫu lớp 0 (17.77\%).
     \end{itemize}
-    Tập kiểm thử được giữ độc lập hoàn toàn và chỉ sử dụng cho giai đoạn đánh giá cuối cùng.
-    \item Tính toán trọng số bù trừ mất cân bằng lớp: Tính toán tỷ lệ mẫu âm trên mẫu dương trên tập huấn luyện:
+    Tập kiểm thử được giữ độc lập hoàn toàn và chỉ sử dụng cho giai đoạn đánh giá cuối cùng; mọi bước trích xuất TF-IDF và chọn lọc đặc trưng đều chỉ \texttt{fit} trên tập huấn luyện (hoặc từng fold trong Cross-Validation) để ngăn chặn rò rỉ dữ liệu (\textit{data leakage}).
+    \item \textbf{Tính toán trọng số bù trừ mất cân bằng lớp:} Tính toán tỷ lệ mẫu âm trên mẫu dương trên tập huấn luyện:
     \begin{equation}
-    \text{scale\_pos\_weight} = \frac{\sum (y_{\text{train}} == 0)}{\sum (y_{\text{train}} == 1)} = \frac{3348}{15440} \approx 0.216
+    \text{scale\_pos\_weight} = \frac{\sum (y_{\text{train}} == 0)}{\sum (y_{\text{train}} == 1)} = \frac{3337}{15451} \approx 0.2160
     \end{equation}
-    Hệ số này được sử dụng trực tiếp để hiệu chỉnh hàm mất mát trong mô hình XGBoost.
+    Hệ số này được sử dụng trực tiếp để hiệu chỉnh hàm mất mát trong mô hình XGBoost, song song với tham số \texttt{class\_weight='balanced'} được khảo sát cho SVM và Logistic Regression.
 \end{itemize}
