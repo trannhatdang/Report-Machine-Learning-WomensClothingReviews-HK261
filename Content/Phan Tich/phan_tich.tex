@@ -33,20 +33,20 @@ Trong quá trình xây dựng bài toán học máy, ba thách thức cốt lõi
 \end{itemize}
 
 \subsection{Cơ sở lựa chọn các họ mô hình}
-Thay vì triển khai các mô hình học sâu nặng tài nguyên, đề tài tập trung vào nhóm thuật toán học máy cổ điển kết hợp biểu diễn TF-IDF nhằm đảm bảo tốc độ huấn luyện nhanh, khả năng diễn giải trực tiếp trọng số từ vựng và tính hiệu quả cao trên bài toán văn bản ngắn. Bốn họ mô hình đại diện cho các trường phái khác nhau được lựa chọn và tóm tắt trong Bảng~\ref{tab:model_rationale}.
+Thay vì triển khai các mô hình học sâu nặng tài nguyên, đề tài xây dựng một thực nghiệm so sánh có kiểm soát giữa 4 họ thuật toán học máy cổ điển đại diện cho các trường phái khác nhau (mô hình sinh xác suất, mô hình tuyến tính phân biệt và mô hình tổ hợp cây phi tuyến) trên cùng biểu diễn TF-IDF. Mục tiêu không chỉ là tìm mô hình có điểm số cao nhất, mà còn kiểm chứng trực tiếp xem cơ chế của từng trường phái đáp ứng ra sao trước các đặc thù của tập dữ liệu này: không gian đặc trưng thưa, số chiều cao từ $n$-gram, độ mất cân bằng lớp $4.63:1$, văn bản ngắn pha trộn khen -- chê, và khả năng tích hợp siêu dữ liệu dạng bảng (Bảng~\ref{tab:model_rationale}).
 
 \begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.15}
-\begin{tabularx}{\textwidth}{|l|X|X|}
+\begin{tabularx}{\textwidth}{|>{\raggedright\arraybackslash}p{3.6cm}|X|X|}
 \hline
-\textbf{Họ mô hình} & \textbf{Đặc điểm phương pháp luận} & \textbf{Vai trò trong nghiên cứu} \\ \hline
-\textbf{Support Vector Machine} (\texttt{LinearSVC}) & Tối ưu hóa siêu phẳng phân tách với lề cực đại; đặc biệt hiệu quả trên không gian vector thưa, số chiều cao. & Mô hình tuyến tính chủ lực cho văn bản TF-IDF và mở rộng với Bagging Pipeline. \\ \hline
-\textbf{Logistic Regression} & Mô hình phân biệt tuyến tính theo xác suất, hỗ trợ điều chuẩn $L_2$ và cân bằng trọng số lớp (\texttt{class\_weight}). & Đối trọng tuyến tính nhẹ, dễ diễn giải trọng số từ khóa và tối ưu Recall lớp 0. \\ \hline
-\textbf{Multinomial Naive Bayes} & Mô hình sinh xác suất dựa trên giả thiết độc lập có điều kiện giữa các từ với hệ số làm trơn Laplace $\alpha$. & Mô hình cơ sở (\textit{baseline}) kinh điển cho NLP với tốc độ huấn luyện nhanh nhất. \\ \hline
-\textbf{XGBoost} & Tăng cường độ dốc (\textit{Gradient Boosting}) trên tập cây quyết định, nắm bắt tương tác phi tuyến. & Kiểm chứng năng lực mô hình phi tuyến trên TF-IDF và khả năng tích hợp siêu dữ liệu dạng bảng (\textit{metadata}). \\ \hline
+\textbf{Họ mô hình} & \textbf{Cơ chế phù hợp với bài toán} & \textbf{Mục tiêu kiểm chứng trong đề tài} \\ \hline
+\textbf{Multinomial Naive Bayes} \newline (\textit{Sinh xác suất}) & Ước lượng trực tiếp xác suất từ vựng theo lớp kết hợp làm trơn Laplace $\alpha$, xử lý nhanh các từ hiếm hoặc lỗi chính tả trong đánh giá ngắn. & Làm mốc đối chiếu (\textit{baseline}) để đánh giá liệu tần suất từ độc lập có đủ phân tách hai lớp hay bị suy giảm mạnh Recall lớp 0 trước các câu pha trộn khen -- chê. \\ \hline
+\textbf{Logistic Regression} \newline (\textit{Tuyến tính, xác suất}) & Tối ưu hàm mất mát logistic có điều chuẩn $L_2$, xuất trực tiếp xác suất hậu nghiệm $P(y=1 \mid x)$ và hỗ trợ \texttt{class\_weight} cho tỷ lệ mất cân bằng $4.63:1$. & Khảo sát mô hình tuyến tính có trọng số từ khóa dễ diễn giải theo log-odds, đồng thời kiểm tra hiệu quả tối ưu Recall lớp 0 và ROC-AUC trên văn bản TF-IDF. \\ \hline
+\textbf{Support Vector Machine} \newline (\texttt{LinearSVC}, \textit{Lề cực đại}) & Tối ưu siêu phẳng lề cực đại bằng hàm mất mát Hinge với độ phức tạp tuyến tính $\mathcal{O}(N \cdot D)$, chịu nhiễu tốt khi không gian $n$-gram $(1, 3)$ mở rộng hàng chục nghìn chiều thưa. & Kiểm chứng xem tối ưu lề có vượt trội hàm mất mát logistic trên ma trận TF-IDF thưa hay không, làm cơ sở cho các mở rộng chọn lọc đặc trưng và Bagging Pipeline. \\ \hline
+\textbf{XGBoost} \newline (\textit{Tổ hợp cây phi tuyến}) & Kết hợp tuần tự cây quyết định bằng khai triển bậc hai, hỗ trợ \texttt{scale\_pos\_weight} và xử lý tự nhiên cả đặc trưng thưa lẫn biến dạng bảng (\texttt{Age}, danh mục sản phẩm). & Kiểm tra xem khả năng bắt tương tác phi tuyến giữa các cụm từ và tích hợp siêu dữ liệu (\textit{metadata}) có tạo ưu thế so với mô hình tuyến tính trên văn bản ngắn hay không. \\ \hline
 \end{tabularx}
-\caption{Tóm tắt cơ sở lựa chọn 4 họ mô hình học máy trong nghiên cứu}
+\caption{Cơ sở so sánh và sự phù hợp của 4 họ mô hình đối với đặc thù bài toán}
 \label{tab:model_rationale}
 \end{table}
 
@@ -228,7 +228,7 @@ Hình~\ref{fig:eda_top_bigrams} cho thấy sự phân hóa ngữ nghĩa rõ rệ
 
 Qua Bảng~\ref{tab:sample_reviews}, ngay cả đánh giá 1 sao hay 3 sao thuộc lớp 0 vẫn thường mở đầu bằng những từ khen (\textit{``so cute''}, \textit{``fit well''}, \textit{``loved the ruffle''}) trước khi đảo chiều bằng liên từ \textit{``but''} và kết luận trả hàng (\textit{``had to go back''}, \textit{``will be retuning it''} -- thậm chí có lỗi chính tả tự nhiên của người dùng).
 
-\begin{Qbox}{Tóm tắt các phát hiện chính từ EDA định hướng thiết kế mô hình}
+\begin{Qbox}{Tóm tắt các phát hiện chính từ EDA định hướng tinh chỉnh mô hình}
 \begin{enumerate}
     \item \textbf{Đánh giá bằng Macro-F1 và Recall lớp 0:} Do mất cân bằng lớp $4.63:1$ (82.24\% vs. 17.76\%), cần áp dụng trọng số lớp (\texttt{class\_weight} / \texttt{scale\_pos\_weight}) và đánh giá chủ yếu trên Macro-F1.
     \item \textbf{Loại bỏ tuyệt đối \texttt{Rating}:} Tránh rò rỉ mục tiêu vì \texttt{Rating} quyết định trên 94\%--99\% nhãn ở các mức 1, 2, 4, 5 sao.
