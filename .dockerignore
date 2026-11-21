@@ -1,0 +1,20 @@
+# Exclude virtual environments, git history, LaTeX build artifacts, and unused files
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.aux
+*.log
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.pdf
+*.tex
+figures/
+ref/
+hcmut.png
+REPORT_NOTE.md
+requirements.txt
